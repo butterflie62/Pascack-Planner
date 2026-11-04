@@ -282,85 +282,1046 @@ a {
     line-height: 1.8;
 }
 
-.resources {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.2rem;
-    padding-bottom: 5.5rem;
-}
-
-.resource-card {
-    position: relative;
-    min-height: 285px;
-    padding: 2rem;
-    border: 1px solid #e6e3dc;
-    background: #fff;
+.student-guide,
+.roadmap {
     scroll-margin-top: 2rem;
 }
 
-.resource-card .card-icon {
+.student-guide {
+    padding-bottom: 5.5rem;
+}
+
+.section-heading,
+.requirements-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.section-heading h2,
+.requirements-heading h3,
+.next-steps h2 {
+    margin: 0;
+    color: var(--navy);
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    letter-spacing: -0.03em;
+}
+
+.section-heading h2 {
+    max-width: 640px;
+    font-size: clamp(2.1rem, 4vw, 3.2rem);
+    line-height: 1.1;
+}
+
+.section-intro {
+    max-width: 650px;
+    margin: 1rem 0 0;
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+.button-navy {
+    flex-shrink: 0;
+    background: var(--navy);
+    color: white;
+}
+
+.button-navy:hover {
+    background: var(--blue);
+}
+
+.guide-note,
+.college-note,
+.roadmap-note {
+    border-left: 3px solid var(--orange);
+    background: #fff;
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+.guide-note {
+    margin-top: 2rem;
+    padding: 1.1rem 1.3rem;
+    font-size: 0.9rem;
+}
+
+.guide-note strong,
+.college-note strong {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--navy);
+}
+
+.guide-intro-grid {
     display: grid;
-    width: 2.6rem;
-    height: 2.6rem;
-    margin-bottom: 2rem;
-    place-items: center;
-    border: 1px solid #dce2e8;
-    border-radius: 50%;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.intro-card {
+    min-height: 195px;
+    padding: 1.35rem;
+    border: 1px solid #e6e3dc;
+    background: #fff;
+}
+
+.intro-number {
     color: var(--blue);
-    font-family: Georgia, serif;
-    font-size: 0.75rem;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.9rem;
 }
 
-.resource-card h2 {
-    margin-bottom: 0.8rem;
-    font-size: 1.8rem;
+.intro-card h3,
+.guide-panel h3,
+.year-card h3 {
+    margin: 0.7rem 0 0.5rem;
+    color: var(--navy);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.3rem;
+    font-weight: 400;
 }
 
-.resource-card > p:not(.eyebrow) {
-    max-width: 390px;
+.intro-card p,
+.guide-panel > p:not(.eyebrow) {
     margin: 0;
     color: var(--muted);
-    font-size: 0.91rem;
+    font-size: 0.88rem;
     line-height: 1.65;
 }
 
-.text-link {
-    display: inline-flex;
-    align-items: center;
+.guide-columns {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.guide-panel {
+    padding: 1.6rem;
+    border: 1px solid #e6e3dc;
+    background: #fff;
+}
+
+.guide-panel h3 {
+    margin-top: 0;
+    font-size: 1.7rem;
+}
+
+.guide-panel .eyebrow {
+    margin-bottom: 0.8rem;
+}
+
+.credit-examples {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 0.7rem;
-    margin-top: 1.5rem;
+    margin: 1.3rem 0;
+}
+
+.credit-examples div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.9rem;
+    background: var(--paper);
+}
+
+.credit-examples strong {
     color: var(--blue);
-    font-size: 0.85rem;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.4rem;
+    font-weight: 400;
+}
+
+.credit-examples span,
+.small-note {
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.55;
+}
+
+.guide-panel .small-note {
+    margin-top: 1rem;
+}
+
+.term-list {
+    display: grid;
+    gap: 0.8rem;
+    margin: 1rem 0 0;
+}
+
+.term-list div {
+    display: grid;
+    grid-template-columns: 105px 1fr;
+    gap: 0.8rem;
+}
+
+.term-list dt {
+    color: var(--blue);
+    font-size: 0.84rem;
+    font-weight: 700;
+}
+
+.term-list dd {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.55;
+}
+
+.requirements,
+.departments {
+    margin-top: 4rem;
+}
+
+.requirements-heading h3 {
+    font-size: clamp(1.7rem, 3vw, 2.2rem);
+}
+
+.source-link {
+    flex-shrink: 0;
+    color: var(--blue);
+    font-size: 0.8rem;
     font-weight: 700;
     text-decoration: none;
 }
 
-.text-link:hover,
-.text-link:focus-visible {
+.source-link:hover,
+.college-note a:hover {
     text-decoration: underline;
-    text-underline-offset: 4px;
+    text-underline-offset: 3px;
 }
 
-.card-accent {
-    border-color: var(--navy);
+.requirement-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 2rem;
+    margin: 1.3rem 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid #dedbd4;
+}
+
+.requirement-list li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    gap: 0.7rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid #dedbd4;
+    font-size: 0.88rem;
+}
+
+.requirement-list strong {
+    color: var(--navy);
+    font-size: 0.84rem;
+}
+
+.requirement-list small {
+    grid-column: 1 / -1;
+    margin-top: -0.5rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+}
+
+.requirements-footnote {
+    max-width: 850px;
+    margin: 1rem 0 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.7;
+}
+
+.departments .section-intro {
+    margin-top: 0.7rem;
+}
+
+.elective-feature-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1.1rem;
+    margin-top: 1.2rem;
+    padding: 1.25rem 1.4rem;
+    border: 1px solid #d5dce3;
+    background: #edf1f4;
+    text-decoration: none;
+    transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.elective-feature-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--blue);
+}
+
+.elective-feature-icon {
+    display: grid;
+    width: 2.8rem;
+    height: 2.8rem;
+    place-items: center;
+    border-radius: 50%;
     background: var(--navy);
+    color: var(--orange);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.6rem;
 }
 
-.card-accent h2 {
+.elective-feature-copy {
+    display: grid;
+    gap: 0.3rem;
+}
+
+.elective-feature-copy strong {
+    color: var(--navy);
+    font-size: 1rem;
+}
+
+.elective-feature-copy > span {
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.elective-feature-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--blue);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.department-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.8rem;
+    margin-top: 1.2rem;
+}
+
+.department-card {
+    display: flex;
+    min-height: 145px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.1rem;
+    border: 1px solid #e6e3dc;
+    background: #fff;
+    text-decoration: none;
+    transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.department-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--blue);
+}
+
+.department-card strong {
+    color: var(--navy);
+    font-size: 0.95rem;
+}
+
+.department-card span {
+    margin-top: 0.45rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.department-card small {
+    margin-top: auto;
+    padding-top: 0.7rem;
+    color: var(--blue);
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.college-note {
+    margin-top: 2rem;
+    padding: 1rem 1.2rem;
+    font-size: 0.85rem;
+}
+
+.college-note a {
+    display: inline-block;
+    margin-top: 0.45rem;
+    color: var(--blue);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.roadmap {
+    padding: 4.5rem 0 5.5rem;
+    border-top: 1px solid #e4e0d8;
+}
+
+.roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.8rem;
+    margin-top: 2rem;
+}
+
+.year-card {
+    padding: 1.3rem;
+    border-top: 3px solid var(--blue);
+    background: #fff;
+}
+
+.year-label {
+    color: var(--blue);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.year-card h3 {
+    margin-top: 0.35rem;
+    font-size: 1.5rem;
+}
+
+.year-card > p {
+    min-height: 2.8rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.year-card ul {
+    display: grid;
+    gap: 0.55rem;
+    margin: 1rem 0 0;
+    padding-left: 1.1rem;
+    color: var(--ink);
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
+.roadmap-note {
+    margin-top: 1.2rem;
+    padding: 1rem 1.2rem;
+    font-size: 0.85rem;
+}
+
+.roadmap-note strong {
+    color: var(--navy);
+}
+
+.next-steps {
+    padding: 3rem 0;
+    background:
+        radial-gradient(ellipse at 85% 50%, rgba(52, 94, 132, 0.38), transparent 35%),
+        var(--navy);
     color: white;
 }
 
-.card-accent > p:not(.eyebrow) {
+.next-steps-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.next-steps h2 {
+    max-width: 600px;
+    color: white;
+    font-size: clamp(2rem, 3.5vw, 2.8rem);
+}
+
+.next-steps-inner > div > p:last-child {
+    max-width: 600px;
+    margin: 0.8rem 0 0;
     color: #d3dce6;
+    font-size: 0.9rem;
+    line-height: 1.7;
 }
 
-.card-accent .card-icon {
-    border-color: rgba(255, 255, 255, 0.4);
+.program-hero {
+    padding: 3.5rem 0 4rem;
+    background:
+        radial-gradient(ellipse at 86% 45%, rgba(52, 94, 132, 0.38), transparent 34%),
+        linear-gradient(115deg, var(--navy-deep), var(--navy) 75%, #1b3853);
+    color: #fff;
+}
+
+.program-hero-inner {
+    max-width: 1050px;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 2rem;
+    color: #d3dce6;
+    font-size: 0.85rem;
+    text-decoration: none;
+}
+
+.back-link:hover {
     color: var(--orange);
 }
 
-.card-accent .text-link {
+.program-hero .eyebrow {
+    margin-bottom: 0.7rem;
+}
+
+.program-hero h1 {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(2.8rem, 6vw, 4.7rem);
+    font-weight: 400;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+}
+
+.program-intro {
+    max-width: 680px;
+    margin: 1rem 0 0;
+    color: #d3dce6;
+    font-size: 1.05rem;
+    line-height: 1.7;
+}
+
+.program-content {
+    padding-top: 2.5rem;
+    padding-bottom: 4.5rem;
+}
+
+.program-planning {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: 2.5rem;
+    padding: 2rem;
+    border: 1px solid #e6e3dc;
+    background: #fff;
+}
+
+.program-planning h2,
+.course-list-heading h2 {
+    margin: 0;
+    color: var(--navy);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.7rem, 3vw, 2.15rem);
+    font-weight: 400;
+    letter-spacing: -0.025em;
+}
+
+.program-requirement {
+    margin: 0.9rem 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.7;
+}
+
+.program-planning h3 {
+    margin: 0.1rem 0 0.8rem;
+    color: var(--navy);
+    font-size: 0.95rem;
+}
+
+.pathway-list {
+    display: grid;
+    gap: 0.7rem;
+    margin: 0;
+    padding-left: 1.2rem;
+    color: var(--muted);
+    font-size: 0.86rem;
+    line-height: 1.6;
+}
+
+.pathway-list li::marker {
+    color: var(--blue);
+    font-weight: 700;
+}
+
+.program-note {
+    margin-top: 1rem;
+    padding: 1rem 1.2rem;
+    border-left: 3px solid var(--orange);
+    background: #fff;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.65;
+}
+
+.course-section {
+    margin-top: 3.5rem;
+}
+
+.course-list-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 1.3rem;
+}
+
+.course-list-heading .eyebrow {
+    margin-bottom: 0.7rem;
+}
+
+.course-count {
+    margin: 0.55rem 0 0;
+    color: var(--muted);
+    font-size: 0.83rem;
+}
+
+.course-search {
+    display: grid;
+    width: min(100%, 340px);
+    gap: 0.45rem;
+    color: var(--ink);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.course-search input {
+    width: 100%;
+    min-height: 46px;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid #cfd5dc;
+    border-radius: 2px;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.85rem;
+}
+
+.course-search input:focus-visible {
+    outline: 3px solid rgba(37, 79, 118, 0.35);
+    outline-offset: 2px;
+    border-color: var(--blue);
+}
+
+.course-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.course-card {
+    display: flex;
+    min-height: 190px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.25rem;
+    border: 1px solid #e6e3dc;
+    background: #fff;
+}
+
+.course-badges {
+    display: flex;
+    min-height: 1.45rem;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.7rem;
+}
+
+.course-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.23rem 0.5rem;
+    border-radius: 2rem;
+    background: #e9eef3;
+    color: var(--blue);
+    font-size: 0.65rem;
+    font-weight: 700;
+}
+
+.badge-ap {
+    background: #f9eddf;
+    color: #7d4a19;
+}
+
+.badge-grade {
+    background: #edf0e9;
+    color: #44583a;
+}
+
+.course-card h3 {
+    margin: 0;
+    color: var(--navy);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.18rem;
+    font-weight: 400;
+    line-height: 1.3;
+}
+
+.course-prerequisite {
+    margin: auto 0 0;
+    padding-top: 1rem;
+    color: var(--muted);
+    font-size: 0.76rem;
+    line-height: 1.55;
+}
+
+.course-prerequisite strong {
+    color: var(--ink);
+}
+
+.no-courses {
+    padding: 1.3rem;
+    border: 1px solid #e6e3dc;
+    background: #fff;
+    color: var(--muted);
+}
+
+.special-program-message {
+    padding: 1.5rem;
+    border: 1px solid #e6e3dc;
+    background: #fff;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.7;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+.counselor-callout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-top: 4rem;
+    padding: 2.2rem;
+    background:
+        radial-gradient(ellipse at 86% 45%, rgba(52, 94, 132, 0.38), transparent 34%),
+        var(--navy);
+    color: #fff;
+}
+
+.counselor-callout .eyebrow {
+    margin-bottom: 0.7rem;
+}
+
+.counselor-callout h2 {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.7rem, 3vw, 2.35rem);
+    font-weight: 400;
+}
+
+.counselor-callout p:last-child {
+    max-width: 630px;
+    margin: 0.7rem 0 0;
+    color: #d3dce6;
+    font-size: 0.85rem;
+    line-height: 1.65;
+}
+
+.electives-hero {
+    padding: 3.5rem 0 4rem;
+    background:
+        radial-gradient(ellipse at 86% 45%, rgba(52, 94, 132, 0.38), transparent 34%),
+        linear-gradient(115deg, var(--navy-deep), var(--navy) 75%, #1b3853);
+    color: #fff;
+}
+
+.electives-hero h1 {
+    max-width: 800px;
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(2.8rem, 6vw, 4.7rem);
+    font-weight: 400;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+}
+
+.electives-hero > .section-wrap > p:last-child {
+    max-width: 680px;
+    margin: 1rem 0 0;
+    color: #d3dce6;
+    font-size: 1.02rem;
+    line-height: 1.7;
+}
+
+.electives-content {
+    padding-top: 2.5rem;
+    padding-bottom: 4.5rem;
+}
+
+.electives-explainer {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.4rem;
+    border: 1px solid #e1ded7;
+    background: #fff;
+}
+
+.explainer-mark {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--navy);
     color: var(--orange);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.1rem;
+}
+
+.electives-explainer h2 {
+    margin: 0;
+    color: var(--navy);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.45rem;
+    font-weight: 400;
+}
+
+.electives-explainer p {
+    margin: 0.5rem 0 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+    line-height: 1.65;
+}
+
+.credit-type-section {
+    margin-top: 3.5rem;
+}
+
+.credit-section-heading {
+    display: grid;
+    grid-template-columns: 3.2rem 1fr;
+    gap: 1rem;
+    align-items: start;
+    margin-bottom: 1.3rem;
+}
+
+.credit-index {
+    display: grid;
+    width: 2.7rem;
+    height: 2.7rem;
+    place-items: center;
+    border: 1px solid #d8dfe6;
+    border-radius: 50%;
+    color: var(--blue);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.9rem;
+}
+
+.credit-section-heading .eyebrow {
+    margin-bottom: 0.45rem;
+}
+
+.credit-section-heading h2 {
+    margin: 0;
+    color: var(--navy);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.9rem, 3.5vw, 2.6rem);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    line-height: 1.12;
+}
+
+.credit-section-heading div > p:last-child {
+    max-width: 770px;
+    margin: 0.6rem 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.65;
+}
+
+.credit-exploration-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.credit-explore-card {
+    display: flex;
+    min-height: 220px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.3rem;
+    border: 1px solid #e6e3dc;
+    background: #fff;
+}
+
+.credit-area-label {
+    margin: 0 0 0.6rem;
+    color: var(--blue);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.credit-explore-card h3,
+.life-skills-feature h3 {
+    margin: 0;
+    color: var(--navy);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.4rem;
+    font-weight: 400;
+}
+
+.credit-explore-card > p:not(.credit-area-label),
+.life-skills-feature p:not(.credit-area-label) {
+    margin: 0.7rem 0 0;
+    color: var(--muted);
+    font-size: 0.83rem;
+    line-height: 1.6;
+}
+
+.course-example-list {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0.9rem 0 0;
+    padding-left: 1rem;
+    color: var(--ink);
+    font-size: 0.76rem;
+    line-height: 1.45;
+}
+
+.course-example-list li::marker {
+    color: var(--blue);
+}
+
+.credit-explore-card .text-link {
+    margin-top: auto;
+    padding-top: 1rem;
+}
+
+.credit-caution {
+    margin: 1rem 0 0;
+    padding: 0.95rem 1.1rem;
+    border-left: 3px solid var(--orange);
+    background: #fff;
+    color: var(--muted);
+    font-size: 0.83rem;
+    line-height: 1.65;
+}
+
+.credit-caution strong {
+    color: var(--navy);
+}
+
+.life-skills-feature {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 0.85rem;
+    padding: 1.4rem;
+    border: 1px solid #cdd7df;
+    background: #edf1f4;
+}
+
+.life-skills-feature > div {
+    max-width: 740px;
+}
+
+.course-time-badge {
+    flex: 0 0 auto;
+    padding: 0.45rem 0.75rem;
+    border-radius: 2rem;
+    background: white;
+    color: var(--blue);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.financial-section {
+    padding-bottom: 3rem;
+    border-bottom: 1px solid #e4e0d8;
+}
+
+.financial-course-card {
+    display: grid;
+    max-width: 610px;
+    gap: 0.55rem;
+    padding: 1.4rem;
+    border: 1px solid #e6e3dc;
+    background: #fff;
+    text-decoration: none;
+    transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.financial-course-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--blue);
+}
+
+.financial-course-card > strong {
+    color: var(--navy);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.45rem;
+    font-weight: 400;
+}
+
+.financial-course-card > span:not(.credit-area-label):not(.text-link) {
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.6;
+}
+
+.financial-course-card .text-link {
+    margin-top: 0.3rem;
+}
+
+.elective-basics {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    align-items: center;
+    gap: 2rem;
+    margin-top: 3rem;
+    padding: 1.7rem;
+    background: #fff;
+    border: 1px solid #e6e3dc;
+}
+
+.elective-basics h2 {
+    margin: 0;
+    color: var(--navy);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+}
+
+.elective-basics > div:first-child > p:last-child {
+    margin: 0.7rem 0 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+    line-height: 1.65;
+}
+
+.credit-example-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.7rem;
+}
+
+.credit-example-pair div {
+    display: grid;
+    gap: 0.35rem;
+    padding: 1rem;
+    background: var(--paper);
+}
+
+.credit-example-pair strong {
+    color: var(--blue);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.4rem;
+    font-weight: 400;
+}
+
+.credit-example-pair span {
+    color: var(--muted);
+    font-size: 0.73rem;
+    line-height: 1.45;
+}
+
+.elective-counselor-callout {
+    margin-top: 3rem;
 }
 
 .site-footer {
@@ -413,8 +1374,46 @@ a {
         padding-top: 3.5rem;
     }
 
-    .resources {
+    .course-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .credit-exploration-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .program-planning {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .hero-art {
+        opacity: 0.1;
+    }
+
+    .student-guide {
         padding-bottom: 3.5rem;
+    }
+
+    .department-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .roadmap-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 1.2rem;
+    }
+}
+
+@media (max-width: 1100px) {
+    .hero-art {
+        right: -120px;
+        opacity: 0.12;
     }
 }
 
@@ -444,21 +1443,84 @@ a {
     }
 
     .hero-art {
-        right: -150px;
-        opacity: 0.25;
+        display: none;
     }
 
-    .resources {
+    .guide-intro-grid,
+    .guide-columns,
+    .requirement-list,
+    .department-grid,
+    .roadmap-grid,
+    .course-grid,
+    .credit-exploration-grid,
+    .elective-basics {
         grid-template-columns: 1fr;
     }
 
-    .resource-card {
-        min-height: 260px;
-        padding: 1.5rem;
+    .requirements,
+    .departments {
+        margin-top: 3rem;
     }
 
-    .resource-card .card-icon {
-        margin-bottom: 1.5rem;
+    .requirements-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    .requirement-list {
+        gap: 0;
+    }
+
+    .intro-card {
+        min-height: 0;
+    }
+
+    .year-card > p {
+        min-height: 0;
+    }
+
+    .next-steps-inner {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .course-list-heading,
+    .counselor-callout,
+    .life-skills-feature {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .credit-section-heading {
+        grid-template-columns: 2.5rem 1fr;
+        gap: 0.7rem;
+    }
+
+    .credit-index {
+        width: 2.2rem;
+        height: 2.2rem;
+    }
+
+    .elective-feature-card {
+        grid-template-columns: auto 1fr;
+    }
+
+    .elective-feature-action {
+        grid-column: 2;
+    }
+
+    .course-search {
+        width: 100%;
+    }
+
+    .program-planning,
+    .counselor-callout {
+        padding: 1.4rem;
+    }
+
+    .term-list div {
+        grid-template-columns: 90px 1fr;
     }
 
     .site-footer {
