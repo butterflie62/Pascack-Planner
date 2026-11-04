@@ -3,11 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#12243a">
     <title>Pascack Planner</title>
     <link href="./style.css" rel="stylesheet">
-    <script src="./script.js" defer></script>
 </head>
 <body>
-    
+    <header class="site-header">
+        <a class="brand" href="#home" aria-label="Pascack Planner home">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Pascack <strong>Planner</strong></span>
+        </a>
+        <nav class="site-nav" aria-label="Main navigation">
+            <a href="#program-of-studies">Program of Studies</a>
+            <a href="#road-map">Road Map</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero" id="home" aria-labelledby="hero-title">
+            <div class="hero-content">
+                <p class="eyebrow">Your next steps start here</p>
+                <h1 id="hero-title">Make a plan that’s <span>yours.</span></h1>
+                <p class="hero-copy">
+                    Explore your studies, think ahead, and build a path through high school that fits your goals.
+                </p>
+                <a class="button button-light" href="#program-of-studies">Explore your options <span aria-hidden="true">→</span></a>
+            </div>
+            <div class="hero-art" aria-hidden="true">
+                <div class="orbit orbit-one"></div>
+                <div class="orbit orbit-two"></div>
+                <div class="orbit orbit-three"></div>
+                <div class="orbit-center">P<span>·</span>P</div>
+                <span class="orbit-dot dot-one"></span>
+                <span class="orbit-dot dot-two"></span>
+                <span class="orbit-dot dot-three"></span>
+            </div>
+        </section>
+
+        <section class="welcome section-wrap" aria-labelledby="welcome-title">
+            <div>
+                <p class="eyebrow eyebrow-dark">Plan with purpose</p>
+                <h2 id="welcome-title">A clearer view of what’s ahead.</h2>
+            </div>
+            <p class="welcome-copy">
+                Pascack Planner brings your course exploration and long-term planning together, so you can make informed choices one step at a time.
+            </p>
+        </section>
+
+        <section class="resources section-wrap" aria-label="Planning resources">
+            <article class="resource-card" id="program-of-studies">
+                <div class="card-icon" aria-hidden="true">01</div>
+                <p class="eyebrow eyebrow-dark">Explore</p>
+                <h2>Program of Studies</h2>
+                <p>Discover course offerings and learn more about the subjects and opportunities available to you.</p>
+                <a class="text-link" href="#program-of-studies">Explore the program <span aria-hidden="true">→</span></a>
+            </article>
+            <article class="resource-card card-accent" id="road-map">
+                <div class="card-icon" aria-hidden="true">02</div>
+                <p class="eyebrow">Look ahead</p>
+                <h2>Road Map</h2>
+                <p>Think through your academic journey and map out the steps toward your future goals.</p>
+                <a class="text-link" href="#road-map">View your road map <span aria-hidden="true">→</span></a>
+            </article>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <a class="brand brand-footer" href="#home">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Pascack <strong>Planner</strong></span>
+        </a>
+        <p>Explore your options. Plan your next step.</p>
+    </footer>
 </body>
 </html>
