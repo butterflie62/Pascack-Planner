@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#12243a">
+    <title>Subject Courses | Pascack Planner</title>
+    <link href="./style.css" rel="stylesheet">
+    <script src="./program-data.js" defer></script>
+    <script src="./program.js" defer></script>
+</head>
+<body class="program-page">
+    <header class="site-header">
+        <a class="brand" href="./index.html#home" aria-label="Pascack Planner home">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Pascack <strong>Planner</strong></span>
+        </a>
+        <nav class="site-nav" aria-label="Main navigation">
+            <a href="./index.html#program-of-studies">All Subjects</a>
+            <a href="./index.html#road-map">Road Map</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="program-hero" aria-labelledby="program-title">
+            <div class="program-hero-inner section-wrap">
+                <a class="back-link" href="./index.html#program-of-studies"><span aria-hidden="true">←</span> All subjects</a>
+                <p class="eyebrow" id="program-kicker">Subject course guide</p>
+                <h1 id="program-title">Explore courses</h1>
+                <p class="program-intro" id="program-intro"></p>
+            </div>
+        </section>
+
+        <div class="section-wrap program-content">
+            <section class="program-planning" aria-labelledby="planning-title">
+                <div>
+                    <p class="eyebrow eyebrow-dark">Start with the plan</p>
+                    <h2 id="planning-title">What should I take?</h2>
+                    <p class="program-requirement" id="program-requirement"></p>
+                </div>
+                <div>
+                    <h3>A simple way to plan</h3>
+                    <ol class="pathway-list" id="program-pathway"></ol>
+                </div>
+            </section>
+
+            <aside class="program-note" id="program-note"></aside>
+
+            <section class="course-section" aria-labelledby="course-list-title">
+                <div class="course-list-heading">
+                    <div>
+                        <p class="eyebrow eyebrow-dark">Course list</p>
+                        <h2 id="course-list-title">Courses in this subject</h2>
+                        <p class="course-count" id="course-count" aria-live="polite"></p>
+                    </div>
+                    <label class="course-search">
+                        <span>Search courses</span>
+                        <input id="course-search" type="search" placeholder="Try “honors”, “biology”..." autocomplete="off">
+                    </label>
+                </div>
+                <div class="course-grid" id="course-grid"></div>
+                <p class="no-courses" id="no-courses" hidden>No courses match that search. Try another word.</p>
+                <div class="special-program-message" id="special-program-message" hidden></div>
+            </section>
+
+            <aside class="counselor-callout">
+                <div>
+                    <p class="eyebrow">Your schedule is personal</p>
+                    <h2>Check your plan with your counselor.</h2>
+                    <p>Course lists are a starting point. Placement, prerequisites, available seats, and graduation requirements can affect which courses fit your schedule.</p>
+                </div>
+                <a class="button button-light" href="./index.html#road-map">See the four-year road map <span aria-hidden="true">→</span></a>
+            </aside>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <a class="brand brand-footer" href="./index.html#home">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Pascack <strong>Planner</strong></span>
+        </a>
+        <p>Explore your options. Plan your next step.</p>
+    </footer>
+</body>
+</html>
