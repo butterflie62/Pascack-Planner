@@ -4,30 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#12243a">
-    <title>Pascack Planner</title>
+    <title>Pascack Planner | Your high school plan, your way</title>
     <link href="./style.css" rel="stylesheet">
 </head>
 <body>
     <header class="site-header">
-        <a class="brand" href="#home" aria-label="Pascack Planner home">
+        <a class="brand" href="./index.html" aria-label="Pascack Planner home">
             <span class="brand-mark" aria-hidden="true">P</span>
             <span>Pascack <strong>Planner</strong></span>
         </a>
         <nav class="site-nav" aria-label="Main navigation">
-            <a href="#program-of-studies">Program of Studies</a>
-            <a href="#road-map">Road Map</a>
+            <a href="./planner.html">My Schedule</a>
+            <a href="./interests.html">My Interests</a>
+            <a href="./programs.html">Program of Studies</a>
+            <a href="./roadmap.html">Road Map</a>
+            <a href="./profile.html">My Plan</a>
         </nav>
     </header>
 
     <main>
-        <section class="hero" id="home" aria-labelledby="hero-title">
+        <section class="hero home-hero">
             <div class="hero-content">
                 <p class="eyebrow">Your next steps start here</p>
                 <h1 id="hero-title">Make a plan that’s <span>yours.</span></h1>
-                <p class="hero-copy">
-                    Explore your studies, think ahead, and build a path through high school that fits your goals.
-                </p>
-                <a class="button button-light" href="#program-of-studies">Explore your options <span aria-hidden="true">→</span></a>
+                <p class="hero-copy">Discover classes you care about, plan a week that works for you, and build your path through high school one choice at a time.</p>
+                <a class="button button-light" href="./planner.html">Start my schedule <span aria-hidden="true">→</span></a>
             </div>
             <div class="hero-art" aria-hidden="true">
                 <div class="orbit orbit-one"></div>
@@ -40,198 +41,71 @@
             </div>
         </section>
 
-        <section class="welcome section-wrap" aria-labelledby="welcome-title">
+        <section class="home-welcome section-wrap" aria-labelledby="welcome-title">
             <div>
-                <p class="eyebrow eyebrow-dark">A guide for getting started</p>
-                <h2 id="welcome-title">High school planning, in plain language.</h2>
+                <p class="eyebrow eyebrow-dark">Your planner, your way</p>
+                <h2 id="welcome-title">What are you excited to learn?</h2>
             </div>
-            <p class="welcome-copy">
-                Explore Pascack courses by subject, understand which classes are required, and learn what to check before you choose.
-            </p>
+            <p class="welcome-copy">Start with what interests you—or jump right into building a schedule. Your choices are saved in this browser, so you can come back and keep planning.</p>
+            <a class="button button-navy" href="./interests.html">Find my interests <span aria-hidden="true">→</span></a>
         </section>
 
-        <section class="student-guide section-wrap" id="program-of-studies" aria-labelledby="guide-title">
-            <div class="section-heading">
-                <div>
-                    <p class="eyebrow eyebrow-dark">Choose a subject</p>
-                    <h2 id="guide-title">Explore courses, one subject at a time.</h2>
-                    <p class="section-intro">Open a subject to browse its courses, find the classes that build on each other, and see prerequisites and grade information in one place.</p>
-                </div>
-                <a class="button button-navy" href="./program.html?subject=english">
-                    Start with English <span aria-hidden="true">→</span>
-                </a>
-            </div>
-
-            <aside class="guide-note">
-                <strong>Plan with a counselor.</strong>
-                Course availability, placement, and prerequisites can change. Some courses require teacher recommendations or placement decisions, and a listed course is not guaranteed to run. Confirm your choices with your school counselor.
-            </aside>
-
-            <div class="guide-intro-grid">
-                <article class="intro-card">
-                    <span class="intro-number">01</span>
-                    <h3>Some classes are required</h3>
-                    <p>Everyone needs certain subjects and enough credits to graduate. Your schedule also has room for classes you choose.</p>
-                </article>
-                <article class="intro-card">
-                    <span class="intro-number">02</span>
-                    <h3>Classes can build on each other</h3>
-                    <p>A course may require an earlier class, a teacher recommendation, or a placement step. Check each course description.</p>
-                </article>
-                <article class="intro-card">
-                    <span class="intro-number">03</span>
-                    <h3>You don’t plan alone</h3>
-                    <p>Students, families, teachers, and counselors work together to choose courses that meet requirements and fit a student’s goals.</p>
-                </article>
-            </div>
-
-            <div class="guide-columns">
-                <article class="guide-panel" aria-labelledby="credits-title">
-                    <p class="eyebrow eyebrow-dark">A useful way to count</p>
-                    <h3 id="credits-title">What are credits?</h3>
-                    <p>Credits are points you earn by passing courses. They add up toward graduation.</p>
-                    <div class="credit-examples">
-                        <div><strong>5 credits</strong><span>A full-year course</span></div>
-                        <div><strong>2.5 credits</strong><span>A semester course</span></div>
-                    </div>
-                    <p class="small-note">Graduation requires at least 120 credits. Students must be scheduled for at least 30 credits each year and earn at least 25 credits in their final year.</p>
-                </article>
-
-                <article class="guide-panel terms-panel" aria-labelledby="terms-title">
-                    <p class="eyebrow eyebrow-dark">Course-catalog words</p>
-                    <h3 id="terms-title">A quick translation</h3>
-                    <dl class="term-list">
-                        <div>
-                            <dt>Prerequisite</dt>
-                            <dd>A class or other requirement you need before you can take a course.</dd>
-                        </div>
-                        <div>
-                            <dt>Elective</dt>
-                            <dd>A course you choose. Some elective areas are still required for graduation.</dd>
-                        </div>
-                        <div>
-                            <dt>Honors</dt>
-                            <dd>An advanced course. Expectations and placement rules depend on the subject and course.</dd>
-                        </div>
-                        <div>
-                            <dt>AP</dt>
-                            <dd>Advanced Placement: a college-level course. Check its description for placement details and exam information.</dd>
-                        </div>
-                    </dl>
-                </article>
-            </div>
-
-            <section class="requirements" aria-labelledby="requirements-title">
-                <div class="requirements-heading">
-                <div>
-                    <p class="eyebrow eyebrow-dark">Your graduation checklist</p>
-                    <h3 id="requirements-title">What the district requires</h3>
-                </div>
-                </div>
-                <ul class="requirement-list">
-                    <li><span>English</span><strong>4 years</strong></li>
-                    <li><span>Physical Education and Health</span><strong>4 years</strong></li>
-                    <li><span>Mathematics</span><strong>3 years</strong></li>
-                    <li><span>Science</span><strong>3 years</strong><small>Biology, Chemistry, and Physics</small></li>
-                    <li><span>Social Studies</span><strong>3 years</strong></li>
-                    <li><span>World Language</span><strong>2 years</strong></li>
-                    <li><span>Visual or Performing Arts</span><strong>1 year</strong></li>
-                    <li><span>21st Century Life and Careers</span><strong>1 year</strong></li>
-                    <li><span>Financial Literacy</span><strong>½ year</strong></li>
-                </ul>
-                <p class="requirements-footnote">There are additional state assessment requirements. The guide also specifies 150 minutes of Physical Education/Health and Safety per week. Your counselor can help you check that your full schedule meets every requirement.</p>
-            </section>
-
-            <section class="departments" aria-labelledby="departments-title">
-                <div class="requirements-heading">
-                    <div>
-                        <p class="eyebrow eyebrow-dark">Find your interests</p>
-                        <h3 id="departments-title">Browse subjects and courses</h3>
-                    </div>
-                </div>
-                <p class="section-intro">Choose a subject to open its own course list. You can search the courses on each page and review placement details before talking through your schedule with a counselor.</p>
-                <a class="elective-feature-card" href="./electives.html">
-                    <span class="elective-feature-icon" aria-hidden="true">+</span>
-                    <span class="elective-feature-copy">
-                        <strong>Electives &amp; credit types</strong>
-                        <span>See how electives may fit Visual/Performing Arts, 21st Century Life &amp; Careers, and Financial Literacy requirements.</span>
-                    </span>
-                    <span class="elective-feature-action">Explore credit options <span aria-hidden="true">→</span></span>
-                </a>
-                <div class="department-grid">
-                    <a class="department-card" href="./program.html?subject=english"><strong>English</strong><span>Literature, writing, journalism, theater, and speaking</span><small>Explore English courses →</small></a>
-                    <a class="department-card" href="./program.html?subject=social-studies"><strong>Social Studies</strong><span>History, government, economics, psychology, and society</span><small>Explore Social Studies courses →</small></a>
-                    <a class="department-card" href="./program.html?subject=mathematics"><strong>Mathematics &amp; Computer Science</strong><span>Math pathways, statistics, programming, and computer science</span><small>Explore Math courses →</small></a>
-                    <a class="department-card" href="./program.html?subject=science"><strong>Science</strong><span>Biology, chemistry, physics, engineering, and other sciences</span><small>Explore Science courses →</small></a>
-                    <a class="department-card" href="./program.html?subject=world-languages"><strong>World Languages</strong><span>Chinese, French, Italian, and Spanish</span><small>Explore Language courses →</small></a>
-                    <a class="department-card" href="./program.html?subject=art"><strong>Art</strong><span>Studio art, ceramics, photography, and design</span><small>Explore Art courses →</small></a>
-                    <a class="department-card" href="./program.html?subject=business-education"><strong>Business Education</strong><span>Personal finance, business, entrepreneurship, and careers</span><small>Explore Business courses →</small></a>
-                    <a class="department-card" href="./program.html?subject=family-consumer-sciences"><strong>Family &amp; Consumer Sciences</strong><span>Life skills, culinary arts, fashion, and family studies</span><small>Explore Family &amp; Consumer Sciences courses →</small></a>
-                    <a class="department-card" href="./program.html?subject=health-physical-education"><strong>Health &amp; Physical Education</strong><span>Health education and physical education</span><small>Explore Health &amp; PE courses →</small></a>
-                    <a class="department-card" href="./program.html?subject=music"><strong>Music</strong><span>Choir, band, instruments, music technology, and theory</span><small>Explore Music courses →</small></a>
-                    <a class="department-card" href="./program.html?subject=technology-education"><strong>Technology Education</strong><span>Design, architecture, robotics, engineering, and video</span><small>Explore Technology courses →</small></a>
-                    <a class="department-card" href="./program.html?subject=special-education"><strong>Special Education</strong><span>Learn about specialized instruction and get help finding the right information</span><small>Explore Special Education →</small></a>
-                    <a class="department-card" href="./program.html?subject=other-programs"><strong>Other Programs</strong><span>Additional programs, including virtual courses and study skills</span><small>Explore Other Programs →</small></a>
-                </div>
-            </section>
-
-            <aside class="college-note">
-                <strong>Thinking about college?</strong>
-                College admission requirements vary. If you have colleges or careers in mind, ask your counselor which courses can help prepare you.
-            </aside>
+        <section class="home-tools section-wrap" aria-label="Planner sections">
+            <a class="home-tool-card home-tool-featured" href="./planner.html">
+                <span class="home-tool-number">01 / PLAN</span>
+                <span class="home-tool-icon" aria-hidden="true">▦</span>
+                <strong>Build my schedule</strong>
+                <span>Choose your classes in a weekly planner inspired by a school schedule.</span>
+                <span class="home-tool-link">Open my schedule <span aria-hidden="true">→</span></span>
+            </a>
+            <a class="home-tool-card" href="./interests.html">
+                <span class="home-tool-number">02 / DISCOVER</span>
+                <span class="home-tool-icon" aria-hidden="true">✳</span>
+                <strong>Explore my interests</strong>
+                <span>Tell us what you enjoy and find subjects and classes worth exploring.</span>
+                <span class="home-tool-link">Find ideas <span aria-hidden="true">→</span></span>
+            </a>
+            <a class="home-tool-card" href="./programs.html">
+                <span class="home-tool-number">03 / BROWSE</span>
+                <span class="home-tool-icon" aria-hidden="true">↗</span>
+                <strong>Explore courses</strong>
+                <span>Browse classes by subject and see grade levels and prerequisites.</span>
+                <span class="home-tool-link">Browse subjects <span aria-hidden="true">→</span></span>
+            </a>
+            <a class="home-tool-card" href="./electives.html">
+                <span class="home-tool-number">04 / UNDERSTAND</span>
+                <span class="home-tool-icon" aria-hidden="true">+</span>
+                <strong>Electives &amp; credits</strong>
+                <span>See how elective classes may help meet graduation requirements.</span>
+                <span class="home-tool-link">Explore credit types <span aria-hidden="true">→</span></span>
+            </a>
+            <a class="home-tool-card" href="./roadmap.html">
+                <span class="home-tool-number">05 / LOOK AHEAD</span>
+                <span class="home-tool-icon" aria-hidden="true">⤴</span>
+                <strong>My four-year road map</strong>
+                <span>Understand the usual high school sequence and graduation checklist.</span>
+                <span class="home-tool-link">See the road map <span aria-hidden="true">→</span></span>
+            </a>
+            <a class="home-tool-card" href="./profile.html">
+                <span class="home-tool-number">06 / MY PLAN</span>
+                <span class="home-tool-icon" aria-hidden="true">◎</span>
+                <strong>My classes &amp; transcript</strong>
+                <span>Save your grade, courses, grades, graduation year, and transcript privately.</span>
+                <span class="home-tool-link">Manage my plan <span aria-hidden="true">→</span></span>
+            </a>
         </section>
 
-        <section class="roadmap section-wrap" id="road-map" aria-labelledby="roadmap-title">
-            <div class="section-heading">
-                <div>
-                    <p class="eyebrow eyebrow-dark">One year at a time</p>
-                    <h2 id="roadmap-title">A typical four-year road map.</h2>
-                    <p class="section-intro">This is one possible outline—not a fixed schedule for every student. Your courses may differ based on placement, interests, and the plan you make with your counselor.</p>
-                </div>
+        <section class="home-reminder section-wrap">
+            <div>
+                <p class="eyebrow eyebrow-dark">A good plan starts with a conversation</p>
+                <h2>Bring your ideas to your school counselor.</h2>
             </div>
-            <div class="roadmap-grid">
-                <article class="year-card">
-                    <span class="year-label">Year 1</span>
-                    <h3>Grade 9</h3>
-                    <p>Build your foundation.</p>
-                    <ul><li>English I</li><li>Math and science</li><li>Social studies</li><li>World language</li><li>Physical education / health</li><li>Elective</li></ul>
-                </article>
-                <article class="year-card">
-                    <span class="year-label">Year 2</span>
-                    <h3>Grade 10</h3>
-                    <p>Continue core classes and explore.</p>
-                    <ul><li>English II</li><li>Math and science</li><li>Social studies</li><li>World language</li><li>Physical education / health</li><li>Visual or performing arts</li></ul>
-                </article>
-                <article class="year-card">
-                    <span class="year-label">Year 3</span>
-                    <h3>Grade 11</h3>
-                    <p>Choose more courses that interest you.</p>
-                    <ul><li>English III or American Studies</li><li>Math and science</li><li>Social studies or American Studies</li><li>Physical education / health</li><li>21st Century Life and Careers</li><li>Elective or world language</li></ul>
-                </article>
-                <article class="year-card">
-                    <span class="year-label">Year 4</span>
-                    <h3>Grade 12</h3>
-                    <p>Finish requirements and plan what’s next.</p>
-                    <ul><li>English IV or English Core Elective</li><li>Physical education / health</li><li>Electives for your interests</li><li>Career Exploration / Internship may be an option</li></ul>
-                </article>
-            </div>
-            <p class="roadmap-note"><strong>Also plan for Financial Literacy:</strong> New Jersey requires it for graduation. Ask your counselor when to take the semester course or hybrid option.</p>
-        </section>
-
-        <section class="next-steps">
-            <div class="next-steps-inner section-wrap">
-                <div>
-                    <p class="eyebrow">Ready to choose?</p>
-                    <h2>Bring your questions to your counselor.</h2>
-                    <p>Start with what you enjoy, check the course descriptions and prerequisites, and make sure your choices keep you on track to graduate.</p>
-                </div>
-                <a class="button button-light" href="#program-of-studies">Browse subjects <span aria-hidden="true">→</span></a>
-            </div>
+            <p>Use this planner to explore and organize ideas. Your counselor and teachers can help confirm course placement, prerequisites, availability, and graduation credits.</p>
         </section>
     </main>
 
     <footer class="site-footer">
-        <a class="brand brand-footer" href="#home">
+        <a class="brand brand-footer" href="./index.html">
             <span class="brand-mark" aria-hidden="true">P</span>
             <span>Pascack <strong>Planner</strong></span>
         </a>

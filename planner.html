@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#12243a">
+    <title>My Schedule | Pascack Planner</title>
+    <link href="./style.css" rel="stylesheet">
+    <script src="./program-data.js" defer></script>
+    <script src="./student-data.js" defer></script>
+    <script src="./planner.js" defer></script>
+</head>
+<body class="planner-page">
+    <header class="site-header">
+        <a class="brand" href="./index.html" aria-label="Pascack Planner home">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Pascack <strong>Planner</strong></span>
+        </a>
+        <nav class="site-nav" aria-label="Main navigation">
+            <a href="./planner.html" aria-current="page">My Schedule</a>
+            <a href="./interests.html">My Interests</a>
+            <a href="./programs.html">Program of Studies</a>
+            <a href="./roadmap.html">Road Map</a>
+            <a href="./profile.html">My Plan</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="section-hero planner-hero">
+            <div class="section-wrap">
+                <a class="back-link" href="./index.html"><span aria-hidden="true">←</span> Home</a>
+                <p class="eyebrow">Your personal draft</p>
+                <h1>Build my schedule.</h1>
+                <p>Choose the classes you’re considering for each day and period. Change your mind whenever you like.</p>
+            </div>
+        </section>
+
+        <div class="section-wrap planner-content">
+            <div class="planner-toolbar">
+                <label class="grade-picker">
+                    <span>Planning for grade</span>
+                    <select id="planner-grade">
+                        <option value="9">Grade 9</option>
+                        <option value="10">Grade 10</option>
+                        <option value="11">Grade 11</option>
+                        <option value="12">Grade 12</option>
+                    </select>
+                </label>
+                <div class="planner-actions">
+                    <span id="save-status" class="save-status" role="status">Saved on this device</span>
+                    <button class="button button-outline" id="print-schedule" type="button">Print schedule</button>
+                    <button class="button button-quiet" id="clear-schedule" type="button">Clear this schedule</button>
+                </div>
+            </div>
+
+            <aside class="planner-notice">
+                <strong>A planning tool, not your official timetable.</strong>
+                This weekly layout is inspired by the sample schedule. Actual class days, periods, times, course placement, and availability are set by the school. Your selections stay in this browser and are not submitted to the school.
+            </aside>
+
+            <section class="schedule-paper" aria-labelledby="schedule-heading">
+                <div class="schedule-paper-heading">
+                    <div>
+                        <p class="eyebrow eyebrow-dark">My class planner</p>
+                        <h2 id="schedule-heading">My week</h2>
+                    </div>
+                    <p id="schedule-summary">No classes added yet</p>
+                </div>
+                <div class="schedule-table-wrap">
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="period-heading">Period</th>
+                                <th scope="col">Monday <span>M</span></th>
+                                <th scope="col">Tuesday <span>T</span></th>
+                                <th scope="col">Wednesday <span>W</span></th>
+                                <th scope="col">Thursday <span>R</span></th>
+                                <th scope="col">Friday <span>F</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedule-body"></tbody>
+                    </table>
+                </div>
+                <p class="schedule-footnote">Tip: Select a cell to choose a class. A course can appear in more than one day if that matches your draft plan.</p>
+            </section>
+
+            <section class="student-panel planner-credit-panel" aria-labelledby="planner-credit-title">
+                <p class="eyebrow eyebrow-dark">Your course plan</p>
+                <h2 class="content-heading" id="planner-credit-title">Credits and graduation requirements</h2>
+                <p class="section-intro">Credits are planning estimates until you enter the values from the course catalog. Choose a requirement category for each course to track progress.</p>
+                <div id="planner-credit-progress" class="graduation-credit-progress"></div>
+                <a class="text-link" href="./profile.html">Add current classes, grades, and student details <span aria-hidden="true">→</span></a>
+            </section>
+
+            <div class="planner-bottom-links">
+                <a class="text-link" href="./interests.html">Need ideas? Explore your interests <span aria-hidden="true">→</span></a>
+                <a class="text-link" href="./electives.html">Not sure what credits you need? View elective types <span aria-hidden="true">→</span></a>
+            </div>
+        </div>
+    </main>
+
+    <dialog class="course-picker" id="course-picker" aria-labelledby="picker-title">
+        <div class="picker-content">
+            <div class="picker-heading">
+                <div>
+                    <p class="eyebrow eyebrow-dark">Choose a class</p>
+                    <h2 id="picker-title">Add a course</h2>
+                    <p id="picker-slot-label"></p>
+                </div>
+                <button class="picker-close" type="button" id="close-picker" aria-label="Close course picker">×</button>
+            </div>
+            <label class="course-search picker-search">
+                <span>Search all courses</span>
+                <input id="picker-search" type="search" placeholder="Type a course or subject name" autocomplete="off">
+            </label>
+            <div class="picker-credit-fields">
+                <label>Estimated credits for this course
+                    <input id="picker-credits" type="number" min="0" max="30" step="0.5" value="5">
+                </label>
+                <label>Graduation requirement
+                    <select id="picker-requirement"></select>
+                </label>
+                <p>Five credits is only a starting estimate. Existing class details stay unchanged; edit them in My Plan.</p>
+            </div>
+            <div id="picker-results" class="picker-results"></div>
+        </div>
+    </dialog>
+
+    <footer class="site-footer">
+        <a class="brand brand-footer" href="./index.html">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Pascack <strong>Planner</strong></span>
+        </a>
+        <p>Explore your options. Plan your next step.</p>
+    </footer>
+</body>
+</html>
