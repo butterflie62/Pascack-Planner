@@ -55,7 +55,7 @@
 
             <aside class="planner-notice">
                 <strong>A planning tool, not your official timetable.</strong>
-                This weekly layout is inspired by the sample schedule. Actual class days, periods, times, course placement, and availability are set by the school. Your selections stay in this browser and are not submitted to the school.
+                Current and past grades use the weekly period layout; future grades use subject-based planning slots. Actual class days, periods, times, course placement, and availability are set by the school. Your selections stay in this browser and are not submitted to the school.
             </aside>
 
             <section class="schedule-paper" aria-labelledby="schedule-heading">
@@ -69,7 +69,7 @@
                 <div class="schedule-table-wrap">
                     <table class="schedule-table">
                         <thead>
-                            <tr>
+                            <tr id="schedule-heading-row">
                                 <th scope="col" class="period-heading">Period</th>
                                 <th scope="col">Monday <span>M</span></th>
                                 <th scope="col">Tuesday <span>T</span></th>
@@ -81,7 +81,7 @@
                         <tbody id="schedule-body"></tbody>
                     </table>
                 </div>
-                <p class="schedule-footnote">Tip: Select a cell to choose a class. A course can appear in more than one day if that matches your draft plan.</p>
+                <p class="schedule-footnote" id="schedule-footnote">Choose a class in an available period to add it on the other weekdays when that period meets. Dropped periods stay empty, and other classes already in those slots are left unchanged.</p>
             </section>
 
             <section class="student-panel planner-credit-panel" aria-labelledby="planner-credit-title">
