@@ -6,6 +6,61 @@
     <meta name="theme-color" content="#12243a">
     <title>My Schedule | Pascack Planner</title>
     <link href="./style.css" rel="stylesheet">
+    <style>
+        .schedule-table .schedule-slot {
+            position: relative;
+        }
+
+        .schedule-table .schedule-slot-period {
+            position: absolute;
+            top: 0.3rem;
+            right: 0.35rem;
+            padding: 0.1rem 0.3rem;
+            border-radius: 999px;
+            background: #12243a;
+            color: #fff;
+            font-size: 0.58rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .schedule-table .schedule-slot-filled {
+            padding-top: 1.2rem;
+        }
+
+        .schedule-table .schedule-period-1 { border-color: #c9d6ec; background: #f1f5fb; }
+        .schedule-table .schedule-period-2 { border-color: #c6ded7; background: #eff7f4; }
+        .schedule-table .schedule-period-3 { border-color: #e7d8bd; background: #faf5eb; }
+        .schedule-table .schedule-period-4 { border-color: #d9cce7; background: #f6f1fa; }
+        .schedule-table .schedule-period-5 { border-color: #e9cfc5; background: #fbf2ee; }
+        .schedule-table .schedule-period-6 { border-color: #c6dce1; background: #eff6f7; }
+        .schedule-table .schedule-period-7 { border-color: #dfdbba; background: #f7f5eb; }
+        .schedule-table .schedule-period-8 { border-color: #cedbc7; background: #f1f5ee; }
+
+        .schedule-table .schedule-period-1:hover { background: #eaf0f9; }
+        .schedule-table .schedule-period-2:hover { background: #e7f2ee; }
+        .schedule-table .schedule-period-3:hover { background: #f5eedf; }
+        .schedule-table .schedule-period-4:hover { background: #efe7f5; }
+        .schedule-table .schedule-period-5:hover { background: #f7eae4; }
+        .schedule-table .schedule-period-6:hover { background: #e6f0f2; }
+        .schedule-table .schedule-period-7:hover { background: #f1efdF; }
+        .schedule-table .schedule-period-8:hover { background: #e9f0e5; }
+
+        .schedule-table .schedule-slot:disabled {
+            cursor: default;
+            opacity: 1;
+        }
+
+        .schedule-table .schedule-slot:disabled:hover {
+            border-color: #c5ced8;
+            background: #fafbfd;
+        }
+
+        .schedule-table .schedule-slot-rotated:disabled:hover {
+            border-color: #b9c9d7;
+            background: #eef3f6;
+        }
+    </style>
     <script src="./program-data.js" defer></script>
     <script src="./student-data.js" defer></script>
     <script src="./planner.js" defer></script>
@@ -81,7 +136,7 @@
                         <tbody id="schedule-body"></tbody>
                     </table>
                 </div>
-                <p class="schedule-footnote" id="schedule-footnote">Choose a class in an available period to add it on the other weekdays when that period meets. Dropped periods stay empty, and other classes already in those slots are left unchanged.</p>
+                <p class="schedule-footnote" id="schedule-footnote">Add classes on Monday. They’ll rotate through the rest of the week, with each class marked by its Monday period number.</p>
             </section>
 
             <section class="student-panel planner-credit-panel" aria-labelledby="planner-credit-title">

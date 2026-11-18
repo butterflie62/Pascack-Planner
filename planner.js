@@ -5,12 +5,12 @@ const DAYS = [
     { id: "thursday", name: "Thursday" },
     { id: "friday", name: "Friday" }
 ];
-const PERIODS_BY_DAY = {
+const MONDAY_PERIODS_BY_DAY = {
     monday: [1, 2, 3, 4, 5, 6, 7, 8],
-    tuesday: [1, 2, 3, 5, 6, 7],
-    wednesday: [4, 1, 2, 8, 5, 6],
-    thursday: [3, 4, 1, 7, 8, 5],
-    friday: [2, 3, 4, 6, 7, 8]
+    tuesday: [1, 2, 3, null, 5, 6, 7, null],
+    wednesday: [4, 1, 2, null, 8, 5, 6, null],
+    thursday: [3, 4, 1, null, 7, 8, 5, null],
+    friday: [2, 3, 4, null, 6, 7, 8, null]
 };
 const FUTURE_COURSE_SLOTS = [
     { id: "math", label: "Math", subjectIds: ["mathematics"] },
@@ -107,7 +107,7 @@ function renderSchedule() {
     scheduleHeading.textContent = isCoursePlan ? `Grade ${grade} course plan` : "My week";
     scheduleFootnote.textContent = isCoursePlan
         ? "Choose a course for each subject area. The language slot can also be used for an elective."
-        : "Choose a class in an available period to add it on the other weekdays when that period meets. Dropped periods stay empty, and other classes already in those slots are left unchanged.";
+        : "Add classes on Monday. They’ll rotate through the rest of the week, with each class marked by its Monday period number.";
     renderScheduleHeadings(isCoursePlan);
     scheduleBody.replaceChildren();
 
@@ -182,54 +182,68 @@ function renderSchedule() {
 
         for (const day of DAYS) {
             const cell = document.createElement("td");
+            const isMonday = day.id === "monday";
+            const mondayPeriod = MONDAY_PERIODS_BY_DAY[day.id][period - 1];
             const key = slotKey(period, day.id);
-            const courseKey = schedule[key];
+            const courseKey = isMonday
+                ? schedule[key]
+                : mondayPeriod === null ? undefined : schedule[slotKey(mondayPeriod, "monday")];
             const course = courseFor(courseKey);
-            const periodMeets = PERIODS_BY_DAY[day.id].includes(period);
             const button = document.createElement("button");
             button.type = "button";
-            button.className = course ? "schedule-slot schedule-slot-filled" : "schedule-slot";
-            button.disabled = !periodMeets;
+            button.className = course
+                ? `schedule-slot schedule-slot-filled${isMonday ? "" : " schedule-slot-rotated"}`
+                : "schedule-slot";
+            if (mondayPeriod !== null) button.classList.add(`schedule-period-${mondayPeriod}`);
+            button.disabled = !isMonday;
             button.setAttribute("aria-label", course
-                ? periodMeets
-                    ? `Period ${period}, ${day.name}: ${course.title}. Change class`
-                    : `Period ${period}, ${day.name}: ${course.title}. No class is scheduled`
-                : periodMeets
-                    ? `Choose a class for Period ${period}, ${day.name}`
-                    : `No class scheduled for Period ${period}, ${day.name}`);
+                ? `${day.name} slot ${period}: ${course.title}, Monday Period ${mondayPeriod}. ${isMonday ? "Change class" : "Rotated from Monday"}`
+                : isMonday
+                    ? `Choose a class for Monday Period ${period}`
+                    : mondayPeriod === null
+                        ? `Does not meet in ${day.name} slot ${period}`
+                        : `No class planned for ${day.name} slot ${period}, from Monday Period ${mondayPeriod}`);
 
             if (course) {
+                const periodLabel = document.createElement("span");
+                periodLabel.className = "schedule-slot-period";
+                periodLabel.textContent = `P${mondayPeriod}`;
                 const title = document.createElement("strong");
                 title.textContent = course.title;
                 const subject = document.createElement("span");
                 subject.className = "schedule-slot-subject";
                 subject.textContent = course.subjectName;
-                button.append(title, subject);
+                button.append(periodLabel, title, subject);
 
-                const remove = document.createElement("button");
-                remove.type = "button";
-                remove.className = "remove-slot";
-                remove.textContent = "Remove";
-                remove.setAttribute("aria-label", `Remove ${course.title} from Period ${period}, ${day.name}`);
-                remove.addEventListener("click", (event) => {
-                    event.stopPropagation();
-                    delete schedule[key];
-                    saveStudentState();
-                    renderSchedule();
-                });
-                cell.append(button, remove);
+                if (isMonday) {
+                    const remove = document.createElement("button");
+                    remove.type = "button";
+                    remove.className = "remove-slot";
+                    remove.textContent = "Remove";
+                    remove.setAttribute("aria-label", `Remove ${course.title} from Monday Period ${period}`);
+                    remove.addEventListener("click", () => {
+                        delete schedule[key];
+                        saveStudentState();
+                        renderSchedule();
+                    });
+                    cell.append(button, remove);
+                } else {
+                    cell.append(button);
+                }
             } else {
                 const plus = document.createElement("span");
                 plus.className = "slot-plus";
                 plus.setAttribute("aria-hidden", "true");
-                plus.textContent = periodMeets ? "+" : "";
+                plus.textContent = isMonday ? "+" : "";
                 const label = document.createElement("span");
-                label.textContent = periodMeets ? "Add class" : "No class";
+                label.textContent = isMonday
+                    ? "Add class"
+                    : mondayPeriod === null ? "Does not meet" : "No class";
                 button.append(plus, label);
                 cell.append(button);
             }
 
-            if (periodMeets) button.addEventListener("click", () => openPicker(period, day, key));
+            if (isMonday) button.addEventListener("click", () => openPicker(period, day, key));
             row.append(cell);
         }
         scheduleBody.append(row);
@@ -328,27 +342,14 @@ function renderPicker(query = "") {
                 if (!studentState.maps[grade][course.subjectId].includes(key)) {
                     studentState.maps[grade][course.subjectId].push(key);
                 }
-                let occupiedSlots = 0;
                 if (activeSlot.type === "course-slot") {
                     futureCourseSlots()[activeSlot.id] = key;
                 } else {
                     const schedule = currentSchedule();
                     schedule[activeSlot.key] = key;
-                    for (const day of DAYS) {
-                        if (!PERIODS_BY_DAY[day.id].includes(activeSlot.period)) continue;
-                        const targetSlot = slotKey(activeSlot.period, day.id);
-                        if (targetSlot === activeSlot.key || !schedule[targetSlot] || schedule[targetSlot] === key) {
-                            schedule[targetSlot] = key;
-                        } else {
-                            occupiedSlots += 1;
-                        }
-                    }
                 }
-                const saved = saveStudentState();
+                saveStudentState();
                 renderSchedule();
-                if (saved && occupiedSlots) {
-                    showStatus(`Saved on this device. ${occupiedSlots} other ${occupiedSlots === 1 ? "slot was" : "slots were"} occupied and left unchanged.`);
-                }
                 picker.close();
             });
             list.append(button);
