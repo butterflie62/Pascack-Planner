@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#12243a">
+    <title>Explore My Interests | Pascack Planner</title>
+    <link href="./style.css" rel="stylesheet">
+    <script src="./program-data.js" defer></script>
+    <script src="./interests.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="./index.html" aria-label="Pascack Planner home">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Pascack <strong>Planner</strong></span>
+        </a>
+        <nav class="site-nav" aria-label="Main navigation">
+            <a href="./planner.html">My Schedule</a>
+            <a href="./interests.html" aria-current="page">My Interests</a>
+            <a href="./programs.html">Program of Studies</a>
+            <a href="./roadmap.html">Road Map</a>
+            <a href="./profile.html">My Plan</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="section-hero">
+            <div class="section-wrap">
+                <a class="back-link" href="./index.html"><span aria-hidden="true">←</span> Home</a>
+                <p class="eyebrow">There’s no wrong answer</p>
+                <h1>What are you curious about?</h1>
+                <p>Pick anything that sounds interesting. We’ll point you toward subjects and classes to explore—this is for ideas, not a test.</p>
+            </div>
+        </section>
+
+        <div class="section-wrap interests-content">
+            <fieldset class="interest-fieldset">
+                <legend>What would you like to try?</legend>
+                <p class="interest-instructions">Choose as many as you want. You can change them anytime.</p>
+                <div class="interest-options">
+                    <label class="interest-option"><input type="checkbox" name="interest" value="make"><span><strong>Make and create</strong><small>Art, design, music, writing, or video</small></span></label>
+                    <label class="interest-option"><input type="checkbox" name="interest" value="solve"><span><strong>Solve problems</strong><small>Math, coding, science, or engineering</small></span></label>
+                    <label class="interest-option"><input type="checkbox" name="interest" value="people"><span><strong>Understand people</strong><small>History, culture, psychology, or community</small></span></label>
+                    <label class="interest-option"><input type="checkbox" name="interest" value="communicate"><span><strong>Communicate and tell stories</strong><small>Languages, literature, journalism, or speaking</small></span></label>
+                    <label class="interest-option"><input type="checkbox" name="interest" value="business"><span><strong>Build a business or career</strong><small>Money, marketing, leadership, or work experience</small></span></label>
+                    <label class="interest-option"><input type="checkbox" name="interest" value="hands-on"><span><strong>Learn hands-on skills</strong><small>Cooking, fashion, technology, or practical design</small></span></label>
+                    <label class="interest-option"><input type="checkbox" name="interest" value="perform"><span><strong>Perform and participate</strong><small>Sports, music, theater, or physical activity</small></span></label>
+                    <label class="interest-option"><input type="checkbox" name="interest" value="explore"><span><strong>Explore the world</strong><small>Science, the environment, society, or other cultures</small></span></label>
+                </div>
+                <button class="button button-navy" type="button" id="show-matches">Show me ideas <span aria-hidden="true">→</span></button>
+                <p class="interest-save-note" id="interest-save-note" role="status">Your choices are saved in this browser only.</p>
+            </fieldset>
+
+            <section class="interest-results" id="interest-results" aria-live="polite" aria-labelledby="results-title" hidden>
+                <div class="requirements-heading">
+                    <div>
+                        <p class="eyebrow eyebrow-dark">A few places to start</p>
+                        <h2 class="content-heading" id="results-title">Subjects to explore</h2>
+                    </div>
+                </div>
+                <p class="section-intro" id="results-intro"></p>
+                <div class="interest-result-grid" id="interest-result-grid"></div>
+            </section>
+
+            <aside class="guide-note">
+                <strong>Explore without pressure.</strong>
+                You don’t need to pick a career or plan your whole future right now. Try a class because it sounds interesting, then ask a teacher or counselor what it’s like.
+            </aside>
+            <a class="button button-outline" href="./planner.html">Add ideas to my schedule <span aria-hidden="true">→</span></a>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <a class="brand brand-footer" href="./index.html">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Pascack <strong>Planner</strong></span>
+        </a>
+        <p>Explore your options. Plan your next step.</p>
+    </footer>
+</body>
+</html>

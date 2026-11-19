@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#12243a">
+    <title>My Plan | Pascack Planner</title>
+    <link href="./style.css" rel="stylesheet">
+    <script src="./program-data.js" defer></script>
+    <script src="./student-data.js" defer></script>
+    <script src="./profile.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="./index.html" aria-label="Pascack Planner home">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Pascack <strong>Planner</strong></span>
+        </a>
+        <nav class="site-nav" aria-label="Main navigation">
+            <a href="./planner.html">My Schedule</a>
+            <a href="./interests.html">My Interests</a>
+            <a href="./programs.html">Program of Studies</a>
+            <a href="./roadmap.html">Road Map</a>
+            <a href="./profile.html" aria-current="page">My Plan</a>
+        </nav>
+    </header>
+    <main>
+        <section class="section-hero">
+            <div class="section-wrap">
+                <a class="back-link" href="./index.html"><span aria-hidden="true">←</span> Home</a>
+                <p class="eyebrow">Your information, on this device</p>
+                <h1>My student plan.</h1>
+                <p>Keep track of your year, classes, grades, and transcript privately in this browser.</p>
+            </div>
+        </section>
+        <div class="section-wrap content-page student-profile-page">
+            <p class="student-data-status" id="profile-status" role="status">Your plan is saved in this browser only.</p>
+            <section class="student-panel" aria-labelledby="student-details-title">
+                <p class="eyebrow eyebrow-dark">About your timeline</p>
+                <h2 class="content-heading" id="student-details-title">Student details</h2>
+                <div class="student-form-grid">
+                    <label>Current grade
+                        <select id="profile-current-grade">
+                            <option value="9">Grade 9</option><option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option><option value="12">Grade 12</option>
+                        </select>
+                    </label>
+                    <label>Expected graduation year
+                        <input id="profile-graduation-year" type="number" min="2026" max="2045" placeholder="e.g. 2030">
+                    </label>
+                    <label>8th-grade math class
+                        <input id="profile-math8-course" type="text" maxlength="100" placeholder="e.g. Algebra I">
+                    </label>
+                    <label>8th-grade math grade
+                        <input id="profile-math8-grade" type="text" maxlength="12" placeholder="e.g. B+">
+                    </label>
+                </div>
+            </section>
+
+            <section class="student-panel" aria-labelledby="add-class-title">
+                <p class="eyebrow eyebrow-dark">Completed, current, or planned</p>
+                <h2 class="content-heading" id="add-class-title">My classes and grades</h2>
+                <p class="section-intro">Record completed classes and current courses. Add future courses from your road map or schedule planner.</p>
+                <form id="class-form" class="student-class-form">
+                    <label>Department
+                        <select id="class-subject" required></select>
+                    </label>
+                    <label>Course
+                        <select id="class-course" required></select>
+                    </label>
+                    <label>School year
+                        <select id="class-grade" required>
+                            <option value="9">Grade 9</option><option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option><option value="12">Grade 12</option>
+                        </select>
+                    </label>
+                    <label>Status
+                        <select id="class-status"><option value="current" selected>Current</option><option value="completed">Completed</option><option value="planned">Planned</option></select>
+                    </label>
+                    <label>Grade earned / current grade
+                        <input id="class-mark" type="text" maxlength="12" placeholder="e.g. A-">
+                    </label>
+                    <label>Credits
+                        <input id="class-credits" type="number" min="0" max="30" step="0.5" value="5">
+                    </label>
+                    <label>Requirement category
+                        <select id="class-requirement"></select>
+                    </label>
+                    <button class="button button-navy" type="submit">Add class</button>
+                </form>
+                <div id="class-list" class="student-class-list"></div>
+                <p class="credit-caution">Course credits are not included in the catalog data. Enter the value from your school’s course information; the initial 5-credit value is only an estimate.</p>
+            </section>
+
+            <section class="student-panel transcript-panel" aria-labelledby="transcript-title">
+                <p class="eyebrow eyebrow-dark">Optional, private file</p>
+                <h2 class="content-heading" id="transcript-title">Transcript</h2>
+                <p class="section-intro">Choose a transcript file to keep in this browser. It is not sent to a server and is not automatically read. Use the class form above to add courses and grades to your plan.</p>
+                <label class="transcript-upload">Select transcript (PDF, image, or document; up to 15 MB)
+                    <input id="transcript-file" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx">
+                </label>
+                <p id="transcript-status" class="student-data-status" role="status">No transcript stored.</p>
+                <button class="button button-quiet" id="remove-transcript" type="button" hidden>Remove saved transcript</button>
+            </section>
+        </div>
+    </main>
+    <footer class="site-footer">
+        <a class="brand brand-footer" href="./index.html"><span class="brand-mark" aria-hidden="true">P</span><span>Pascack <strong>Planner</strong></span></a>
+        <p>Explore your options. Plan your next step.</p>
+    </footer>
+</body>
+</html>
