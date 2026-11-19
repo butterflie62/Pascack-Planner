@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#12243a">
+    <title>My Four-Year Plan | Pascack Planner</title>
+    <link href="./style.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+    <script src="./supabase-config.js" defer></script>
+    <script src="./program-data.js" defer></script>
+    <script src="./planner.js" defer></script>
+</head>
+<body class="planner-page">
+    <header class="site-header">
+        <a class="brand" href="./index.html#home" aria-label="Pascack Planner home">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Pascack <strong>Planner</strong></span>
+        </a>
+        <nav class="site-nav" aria-label="Main navigation">
+            <a href="./program-of-studies.html#program-of-studies">All Subjects</a>
+            <a href="./road-map.html#road-map">Road Map</a>
+            <a href="./planner.html" aria-current="page">My Planner</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="program-hero" aria-labelledby="planner-title">
+            <div class="program-hero-inner section-wrap">
+                <a class="back-link" href="./program-of-studies.html#program-of-studies"><span aria-hidden="true">←</span> Course guide</a>
+                <p class="eyebrow">Your courses, your next steps</p>
+                <h1 id="planner-title">My four-year plan</h1>
+                <p class="program-intro">Sign in to save your plan, import courses from a PDF transcript, and map out the years ahead.</p>
+            </div>
+        </section>
+
+        <div class="section-wrap planner-content">
+            <aside class="guide-note planner-privacy">
+                <strong>Your transcript is sensitive information.</strong>
+                This planner sends the PDF you select to the configured Supabase project and saves your course plan to your account. The PDF is private and account-scoped; use this only with permission and check with your school before uploading a real transcript.
+            </aside>
+
+            <section class="planner-auth" id="auth-panel" aria-labelledby="auth-title">
+                <div>
+                    <p class="eyebrow eyebrow-dark">Student account</p>
+                    <h2 id="auth-title">Sign in or create an account.</h2>
+                    <p class="planner-copy">Continue with Google, or use your email and password. Email accounts may require address confirmation.</p>
+                </div>
+                <form id="auth-form" class="planner-form">
+                    <button class="button button-outline google-signin-button" id="google-sign-in-button" type="button">
+                        <span aria-hidden="true">G</span>
+                        Continue with Google
+                    </button>
+                    <p class="auth-divider">or sign in with email</p>
+                    <label class="planner-field">
+                        <span>Email</span>
+                        <input id="auth-email" name="email" type="email" autocomplete="email" required>
+                    </label>
+                    <label class="planner-field">
+                        <span>Password</span>
+                        <input id="auth-password" name="password" type="password" minlength="8" autocomplete="current-password" required>
+                    </label>
+                    <div class="planner-actions">
+                        <button class="button button-navy" type="submit" id="sign-in-button">Sign in</button>
+                        <button class="button button-outline" type="button" id="sign-up-button">Create account</button>
+                    </div>
+                </form>
+                <p class="planner-status" id="auth-status" role="status" aria-live="polite"></p>
+            </section>
+
+            <section class="planner-app" id="planner-app" hidden aria-labelledby="plan-heading">
+                <div class="planner-toolbar">
+                    <div>
+                        <p class="eyebrow eyebrow-dark">Saved to your account</p>
+                        <h2 id="plan-heading">Plan your next classes.</h2>
+                        <p class="planner-copy" id="signed-in-email"></p>
+                    </div>
+                    <button class="button button-outline" id="sign-out-button" type="button">Sign out</button>
+                </div>
+
+                <div class="planner-controls">
+                    <label class="planner-field">
+                        <span>What grade are you in now?</span>
+                        <select id="current-grade">
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                    </label>
+                    <div>
+                        <p class="planner-copy">Earlier grades are shown as transcript history and can be corrected. Add planned courses from your current grade onward.</p>
+                    </div>
+                </div>
+
+                <section class="transcript-import" aria-labelledby="transcript-title">
+                    <div>
+                        <p class="eyebrow eyebrow-dark">Bring in completed courses</p>
+                        <h3 id="transcript-title">Upload a PDF transcript</h3>
+                        <p class="planner-copy">Course names and grade levels are matched in your browser. Review every match before importing it into your yearly spreadsheet; the original PDF is saved privately when you save your plan.</p>
+                    </div>
+                    <div class="transcript-upload">
+                        <label class="planner-field" for="transcript-file">
+                            <span>Transcript PDF (maximum 10 MB)</span>
+                            <input id="transcript-file" type="file" accept="application/pdf,.pdf">
+                        </label>
+                        <button class="button button-navy" type="button" id="scan-transcript-button">Read transcript</button>
+                    </div>
+                    <label class="planner-consent">
+                        <input id="transcript-storage-consent" type="checkbox">
+                        <span>I have permission to upload this transcript, and I understand the original PDF will be stored in this Supabase project.</span>
+                    </label>
+                    <p class="planner-status" id="transcript-status" role="status" aria-live="polite"></p>
+                    <div id="transcript-review" class="transcript-review" hidden>
+                        <h4>Review detected courses</h4>
+                        <p class="planner-copy">PDF layouts vary, so confirm every course and grade before importing.</p>
+                        <div id="transcript-matches" class="transcript-matches"></div>
+                        <button class="button button-navy" type="button" id="import-matches-button">Add matches to my plan</button>
+                    </div>
+                </section>
+
+                <section class="four-year-sheet" aria-labelledby="sheet-title">
+                    <div class="sheet-heading">
+                        <div>
+                            <p class="eyebrow eyebrow-dark">Editable course sheet</p>
+                            <h3 id="sheet-title">Your four-year spreadsheet</h3>
+                        </div>
+                        <div class="planner-actions">
+                            <button class="button button-outline" id="download-csv-button" type="button">Download CSV</button>
+                            <button class="button button-navy" id="save-plan-button" type="button">Save plan</button>
+                        </div>
+                    </div>
+                    <p class="planner-copy">Review transcript courses and add planned courses for your current grade and future years. Use the custom course option for a class that does not appear in the catalog.</p>
+                    <p class="planner-copy">This is a draft, not a placement or graduation audit. Check course prerequisites and availability with your counselor.</p>
+                    <p class="planner-status" id="plan-status" role="status" aria-live="polite"></p>
+                    <div class="year-plan-table-wrap" role="region" aria-label="Editable four-year course spreadsheet" tabindex="0">
+                        <table class="year-plan-table">
+                            <caption>Courses in your plan, grouped by grade. Scroll horizontally to view all columns.</caption>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Course</th>
+                                    <th scope="col">Grade</th>
+                                    <th scope="col">Subject</th>
+                                    <th scope="col">Source</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="year-plan-grid"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <div class="planner-danger-zone">
+                    <p>Deleting your plan also removes its saved transcript PDF.</p>
+                    <button class="button button-danger" id="delete-plan-button" type="button">Delete my plan and PDF</button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <a class="brand brand-footer" href="./index.html#home">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span>Pascack <strong>Planner</strong></span>
+        </a>
+        <p>Explore your options. Plan your next step.</p>
+    </footer>
+</body>
+</html>

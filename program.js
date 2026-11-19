@@ -134,6 +134,7 @@ const programGuidance = {
 const programs = window.PASCACK_PROGRAMS || [];
 const params = new URLSearchParams(window.location.search);
 const subjectId = params.get("subject");
+const initialSearch = params.get("q") || "";
 const program = programs.find((item) => item.id === subjectId);
 const guidance = programGuidance[subjectId];
 
@@ -227,10 +228,11 @@ if (!program || !guidance) {
         return item;
     }));
     document.querySelector("#program-note").textContent = guidance.note;
+    search.value = initialSearch;
     search.addEventListener("input", () => renderCourses(search.value));
 
     if (program.courses.length) {
-        renderCourses();
+        renderCourses(initialSearch);
     } else {
         document.querySelector(".course-list-heading").hidden = true;
         specialMessage.hidden = false;

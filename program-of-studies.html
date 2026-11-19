@@ -4,50 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#12243a">
-    <title>Pascack Planner</title>
+    <title>Program of Studies | Pascack Planner</title>
     <link href="./style.css" rel="stylesheet">
+    <script src="./program-data.js" defer></script>
+    <script src="./script.js" defer></script>
 </head>
 <body>
     <header class="site-header">
-        <a class="brand" href="#home" aria-label="Pascack Planner home">
+        <a class="brand" href="./index.html#home" aria-label="Pascack Planner home">
             <span class="brand-mark" aria-hidden="true">P</span>
             <span>Pascack <strong>Planner</strong></span>
         </a>
         <nav class="site-nav" aria-label="Main navigation">
-            <a href="#program-of-studies">Program of Studies</a>
-            <a href="#road-map">Road Map</a>
+            <a href="./index.html#home">Home</a>
+            <a href="#program-of-studies" aria-current="page">Program of Studies</a>
+            <a href="./road-map.html#road-map">Road Map</a>
+            <a class="nav-signin" href="./planner.html#auth-panel">Sign in / Sign up</a>
         </nav>
     </header>
 
     <main>
-        <section class="hero" id="home" aria-labelledby="hero-title">
-            <div class="hero-content">
-                <p class="eyebrow">Your next steps start here</p>
-                <h1 id="hero-title">Make a plan that’s <span>yours.</span></h1>
-                <p class="hero-copy">
-                    Explore your studies, think ahead, and build a path through high school that fits your goals.
-                </p>
-                <a class="button button-light" href="#program-of-studies">Explore your options <span aria-hidden="true">→</span></a>
+        <section class="program-hero" aria-labelledby="program-title">
+            <div class="program-hero-inner section-wrap">
+                <a class="back-link" href="./index.html#home"><span aria-hidden="true">←</span> Home</a>
+                <p class="eyebrow">Plan one year at a time</p>
+                <h1 id="program-title">Program of Studies</h1>
+                <p class="program-intro">Explore Pascack courses by subject and review graduation requirements. Use the separate Road Map page to see one possible four-year sequence.</p>
             </div>
-            <div class="hero-art" aria-hidden="true">
-                <div class="orbit orbit-one"></div>
-                <div class="orbit orbit-two"></div>
-                <div class="orbit orbit-three"></div>
-                <div class="orbit-center">P<span>·</span>P</div>
-                <span class="orbit-dot dot-one"></span>
-                <span class="orbit-dot dot-two"></span>
-                <span class="orbit-dot dot-three"></span>
-            </div>
-        </section>
-
-        <section class="welcome section-wrap" aria-labelledby="welcome-title">
-            <div>
-                <p class="eyebrow eyebrow-dark">A guide for getting started</p>
-                <h2 id="welcome-title">High school planning, in plain language.</h2>
-            </div>
-            <p class="welcome-copy">
-                Explore Pascack courses by subject, understand which classes are required, and learn what to check before you choose.
-            </p>
         </section>
 
         <section class="student-guide section-wrap" id="program-of-studies" aria-labelledby="guide-title">
@@ -59,6 +42,9 @@
                 </div>
                 <a class="button button-navy" href="./program.html?subject=english">
                     Start with English <span aria-hidden="true">→</span>
+                </a>
+                <a class="button button-navy" href="./planner.html">
+                    Build a four-year plan <span aria-hidden="true">→</span>
                 </a>
             </div>
 
@@ -149,7 +135,15 @@
                         <h3 id="departments-title">Browse subjects and courses</h3>
                     </div>
                 </div>
-                <p class="section-intro">Choose a subject to open its own course list. You can search the courses on each page and review placement details before talking through your schedule with a counselor.</p>
+                <p class="section-intro">Search the full catalog by course or subject, or choose a subject to browse its course list and placement details.</p>
+                <label class="course-search main-course-search" for="main-course-search">
+                    <span>Search all subjects and courses</span>
+                    <input id="main-course-search" type="search" placeholder="Try biology, photography, AP..." autocomplete="off">
+                </label>
+                <div class="main-search-results" id="main-search-results" role="region" aria-label="Course search results" hidden>
+                    <p class="main-search-summary" id="main-search-summary" aria-live="polite"></p>
+                    <div class="main-search-list" id="main-search-list"></div>
+                </div>
                 <a class="elective-feature-card" href="./electives.html">
                     <span class="elective-feature-icon" aria-hidden="true">+</span>
                     <span class="elective-feature-copy">
@@ -181,43 +175,6 @@
             </aside>
         </section>
 
-        <section class="roadmap section-wrap" id="road-map" aria-labelledby="roadmap-title">
-            <div class="section-heading">
-                <div>
-                    <p class="eyebrow eyebrow-dark">One year at a time</p>
-                    <h2 id="roadmap-title">A typical four-year road map.</h2>
-                    <p class="section-intro">This is one possible outline—not a fixed schedule for every student. Your courses may differ based on placement, interests, and the plan you make with your counselor.</p>
-                </div>
-            </div>
-            <div class="roadmap-grid">
-                <article class="year-card">
-                    <span class="year-label">Year 1</span>
-                    <h3>Grade 9</h3>
-                    <p>Build your foundation.</p>
-                    <ul><li>English I</li><li>Math and science</li><li>Social studies</li><li>World language</li><li>Physical education / health</li><li>Elective</li></ul>
-                </article>
-                <article class="year-card">
-                    <span class="year-label">Year 2</span>
-                    <h3>Grade 10</h3>
-                    <p>Continue core classes and explore.</p>
-                    <ul><li>English II</li><li>Math and science</li><li>Social studies</li><li>World language</li><li>Physical education / health</li><li>Visual or performing arts</li></ul>
-                </article>
-                <article class="year-card">
-                    <span class="year-label">Year 3</span>
-                    <h3>Grade 11</h3>
-                    <p>Choose more courses that interest you.</p>
-                    <ul><li>English III or American Studies</li><li>Math and science</li><li>Social studies or American Studies</li><li>Physical education / health</li><li>21st Century Life and Careers</li><li>Elective or world language</li></ul>
-                </article>
-                <article class="year-card">
-                    <span class="year-label">Year 4</span>
-                    <h3>Grade 12</h3>
-                    <p>Finish requirements and plan what’s next.</p>
-                    <ul><li>English IV or English Core Elective</li><li>Physical education / health</li><li>Electives for your interests</li><li>Career Exploration / Internship may be an option</li></ul>
-                </article>
-            </div>
-            <p class="roadmap-note"><strong>Also plan for Financial Literacy:</strong> New Jersey requires it for graduation. Ask your counselor when to take the semester course or hybrid option.</p>
-        </section>
-
         <section class="next-steps">
             <div class="next-steps-inner section-wrap">
                 <div>
@@ -231,7 +188,7 @@
     </main>
 
     <footer class="site-footer">
-        <a class="brand brand-footer" href="#home">
+        <a class="brand brand-footer" href="./index.html#home">
             <span class="brand-mark" aria-hidden="true">P</span>
             <span>Pascack <strong>Planner</strong></span>
         </a>
