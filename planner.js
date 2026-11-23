@@ -4,6 +4,16 @@ const TRANSCRIPT_BUCKET = "student-transcripts";
 const MAX_TRANSCRIPT_BYTES = 10 * 1024 * 1024;
 const MAX_TRANSCRIPT_PAGES = 30;
 const INITIAL_SLOTS_PER_GRADE = 8;
+const COURSE_SLOT_SUGGESTIONS = [
+    "Math",
+    "English",
+    "History",
+    "Science",
+    "Gym / Health",
+    "Language or elective",
+    "Elective",
+    "Elective"
+];
 
 const authPanel = document.querySelector("#auth-panel");
 const authForm = document.querySelector("#auth-form");
@@ -30,7 +40,12 @@ const catalogCourses = (window.PASCACK_PROGRAMS || []).flatMap((program) =>
         subjectId: program.id,
         subject: program.name
     }))
-);
+).concat({
+    id: "pascack-period",
+    title: "Pascack Period",
+    subjectId: "pascack-period",
+    subject: "Free period"
+});
 const coursesById = new Map(catalogCourses.map((course) => [course.id, course]));
 
 let supabaseClient;
@@ -197,7 +212,8 @@ function addCourseSelect(row, locked, slotNumber, onCourseChange) {
 
     const prompt = document.createElement("option");
     prompt.value = "";
-    prompt.textContent = "Choose a course";
+    const suggestion = COURSE_SLOT_SUGGESTIONS[slotNumber - 1] || "Elective or other";
+    prompt.textContent = `Choose a course (suggested: ${suggestion})`;
     select.append(prompt);
 
     const groups = new Map();
