@@ -3,6 +3,17 @@ const SUPABASE_ANON_KEY = window.PASCACK_SUPABASE_CONFIG?.anonKey;
 const TRANSCRIPT_BUCKET = "student-transcripts";
 const MAX_TRANSCRIPT_BYTES = 10 * 1024 * 1024;
 const MAX_TRANSCRIPT_PAGES = 30;
+const INITIAL_SLOTS_PER_GRADE = 8;
+const COURSE_SLOT_SUGGESTIONS = [
+    "Math",
+    "English",
+    "History",
+    "Science",
+    "Gym / Health",
+    "Language or elective",
+    "Elective",
+    "Elective"
+];
 
 const authPanel = document.querySelector("#auth-panel");
 const authForm = document.querySelector("#auth-form");
@@ -29,7 +40,12 @@ const catalogCourses = (window.PASCACK_PROGRAMS || []).flatMap((program) =>
         subjectId: program.id,
         subject: program.name
     }))
-);
+).concat({
+    id: "pascack-period",
+    title: "Pascack Period",
+    subjectId: "pascack-period",
+    subject: "Free period"
+});
 const coursesById = new Map(catalogCourses.map((course) => [course.id, course]));
 
 let supabaseClient;
@@ -40,6 +56,7 @@ let transcriptPath = null;
 let pendingTranscriptFile = null;
 let transcriptMatches = [];
 let planDirty = false;
+const historyEditGrades = new Set();
 
 function setStatus(element, message, isError = false) {
     element.textContent = message;
@@ -63,7 +80,8 @@ function createCourseRow(course = {}) {
         grade: Number(course.grade),
         courseId: coursesById.has(course.courseId) ? course.courseId : "",
         customTitle: typeof course.customTitle === "string" ? course.customTitle.slice(0, 160) : "",
-        source: course.source === "transcript" ? "transcript" : "planned"
+        source: course.source === "transcript" ? "transcript" : "planned",
+        extraSlot: course.extraSlot === true
     };
 }
 
@@ -187,14 +205,15 @@ function findTranscriptMatches(lines) {
     return [...matchesByCourseAndGrade.values()];
 }
 
-function addCourseSelect(row, locked, onCourseChange) {
+function addCourseSelect(row, locked, slotNumber, onCourseChange) {
     const select = document.createElement("select");
-    select.setAttribute("aria-label", `Course for grade ${row.grade}`);
+    select.setAttribute("aria-label", `Course slot ${slotNumber} for grade ${row.grade}`);
     select.disabled = locked;
 
     const prompt = document.createElement("option");
     prompt.value = "";
-    prompt.textContent = "Choose a course";
+    const suggestion = COURSE_SLOT_SUGGESTIONS[slotNumber - 1] || "Elective or other";
+    prompt.textContent = `Choose a course (suggested: ${suggestion})`;
     select.append(prompt);
 
     const groups = new Map();
@@ -232,7 +251,7 @@ function addCourseSelect(row, locked, onCourseChange) {
     customInput.maxLength = 160;
     customInput.placeholder = "Enter course title";
     customInput.value = row.customTitle;
-    customInput.setAttribute("aria-label", `Custom course title for grade ${row.grade}`);
+    customInput.setAttribute("aria-label", `Custom course title for grade ${row.grade}, slot ${slotNumber}`);
     customInput.hidden = !row.customTitle;
     customInput.disabled = locked;
     customInput.addEventListener("input", () => {
@@ -266,37 +285,61 @@ function renderPlan() {
         badge.className = `year-plan-badge${history ? " is-history" : ""}`;
         badge.textContent = history ? "Transcript history" : grade === currentGrade ? "Current year" : "Plan ahead";
         headingCell.append(badge);
+        if (history) {
+            const editButton = document.createElement("button");
+            const isEditing = historyEditGrades.has(grade);
+            editButton.className = "button button-outline";
+            editButton.type = "button";
+            editButton.textContent = isEditing ? "Done editing" : "Edit courses";
+            editButton.setAttribute("aria-label", `${isEditing ? "Finish editing" : "Edit"} Grade ${grade} courses`);
+            editButton.addEventListener("click", () => {
+                if (isEditing) historyEditGrades.delete(grade);
+                else historyEditGrades.add(grade);
+                renderPlan();
+            });
+            headingCell.append(editButton);
+        }
         heading.append(headingCell);
         yearPlanGrid.append(heading);
 
         const coursesForYear = planCourses.filter((course) => course.grade === grade);
-        if (!coursesForYear.length) {
-            const emptyRow = document.createElement("tr");
-            const empty = document.createElement("td");
-            empty.className = "sheet-empty";
-            empty.textContent = history ? "No courses imported for this year." : "Add courses to start planning.";
-            empty.colSpan = 5;
-            emptyRow.append(empty);
-            yearPlanGrid.append(emptyRow);
+        const regularCourses = coursesForYear.filter((course) => !course.extraSlot);
+        const extraSlots = coursesForYear.filter((course) => course.extraSlot);
+        const slotsForYear = [...regularCourses];
+        const initialSlotCount = Math.max(INITIAL_SLOTS_PER_GRADE, regularCourses.length);
+        const isEditingHistory = history && historyEditGrades.has(grade);
+        while ((!history || isEditingHistory) && slotsForYear.length < initialSlotCount) {
+            slotsForYear.push(createCourseRow({ grade, source: "planned" }));
         }
+        slotsForYear.push(...extraSlots);
+        const visibleSlots = history && !isEditingHistory
+            ? slotsForYear.filter((course) => course.courseId || course.customTitle)
+            : slotsForYear;
+        const locked = history && !isEditingHistory;
 
-        for (const course of coursesForYear) {
+        for (const [index, course] of visibleSlots.entries()) {
             const row = document.createElement("tr");
             row.className = "year-plan-course-row";
+            const isStoredSlot = planCourses.includes(course);
+            const isEmptySlot = !course.courseId && !course.customTitle;
             const courseCell = document.createElement("td");
             courseCell.className = "year-plan-course-cell";
             const subjectCell = document.createElement("td");
             const catalogCourse = coursesById.get(course.courseId);
-            subjectCell.textContent = catalogCourse?.subject || (course.customTitle ? "Custom course" : "Choose a course");
-            courseCell.append(addCourseSelect(course, false, () => {
+            subjectCell.textContent = catalogCourse?.subject || (course.customTitle ? "Custom course" : "—");
+            courseCell.append(addCourseSelect(course, locked, index + 1, () => {
+                if (!planCourses.includes(course) && (course.courseId || course.customTitle)) {
+                    planCourses.push(course);
+                }
                 const selectedCourse = coursesById.get(course.courseId);
-                subjectCell.textContent = selectedCourse?.subject || (course.customTitle ? "Custom course" : "Choose a course");
+                subjectCell.textContent = selectedCourse?.subject || (course.customTitle ? "Custom course" : "—");
             }));
 
             const gradeCell = document.createElement("td");
             const gradeSelect = document.createElement("select");
             gradeSelect.className = "plan-grade-select";
             gradeSelect.setAttribute("aria-label", `Grade for ${catalogCourse?.title || course.customTitle || "course"}`);
+            gradeSelect.disabled = locked || isEmptySlot;
             for (let courseGrade = 9; courseGrade <= 12; courseGrade += 1) {
                 const option = document.createElement("option");
                 option.value = String(courseGrade);
@@ -314,42 +357,44 @@ function renderPlan() {
             const sourceCell = document.createElement("td");
             const source = document.createElement("span");
             source.className = "sheet-source";
-            source.textContent = course.source === "transcript" ? "Transcript match" : "Planned";
+            source.textContent = isEmptySlot ? "Open slot" : course.source === "transcript" ? "Transcript match" : "Planned";
             sourceCell.append(source);
 
-            const removeButton = document.createElement("button");
-            removeButton.className = "sheet-remove";
-            removeButton.type = "button";
-            removeButton.textContent = "Remove";
-            removeButton.setAttribute("aria-label", `Remove course from grade ${grade}`);
-            removeButton.addEventListener("click", () => {
-                planCourses = planCourses.filter((item) => item.id !== course.id);
-                renderPlan();
-                setDirty();
-            });
             const actionCell = document.createElement("td");
-            actionCell.append(removeButton);
+            if (isStoredSlot) {
+                const removeButton = document.createElement("button");
+                removeButton.className = "sheet-remove";
+                removeButton.type = "button";
+                removeButton.textContent = "Remove";
+                removeButton.disabled = locked;
+                removeButton.setAttribute("aria-label", `Remove course slot ${index + 1} from grade ${grade}`);
+                removeButton.addEventListener("click", () => {
+                    planCourses = planCourses.filter((item) => item.id !== course.id);
+                    renderPlan();
+                    setDirty();
+                });
+                actionCell.append(removeButton);
+            }
             row.append(courseCell, gradeCell, subjectCell, sourceCell, actionCell);
             yearPlanGrid.append(row);
         }
 
-        if (!history) {
-            const addButton = document.createElement("button");
-            addButton.className = "sheet-add";
-            addButton.type = "button";
-            addButton.textContent = "+ Add a course";
-            addButton.addEventListener("click", () => {
-                planCourses.push(createCourseRow({ grade, source: "planned" }));
-                renderPlan();
-                setDirty();
-            });
-            const addRow = document.createElement("tr");
-            const addCell = document.createElement("td");
-            addCell.colSpan = 5;
-            addCell.append(addButton);
-            addRow.append(addCell);
-            yearPlanGrid.append(addRow);
-        }
+        const addButton = document.createElement("button");
+        addButton.className = "sheet-add";
+        addButton.type = "button";
+        addButton.textContent = "+ Add another slot";
+        addButton.disabled = locked;
+        addButton.addEventListener("click", () => {
+            planCourses.push(createCourseRow({ grade, source: "planned", extraSlot: true }));
+            renderPlan();
+            setDirty();
+        });
+        const addRow = document.createElement("tr");
+        const addCell = document.createElement("td");
+        addCell.colSpan = 5;
+        addCell.append(addButton);
+        addRow.append(addCell);
+        yearPlanGrid.append(addRow);
     }
 }
 
@@ -474,6 +519,7 @@ function showSignedInState(user) {
 function showSignedOutState() {
     signedInUser = null;
     plannerApp.hidden = true;
+    historyEditGrades.clear();
     authPanel.hidden = false;
     planCourses = [];
     transcriptPath = null;
@@ -645,12 +691,13 @@ async function savePlan() {
         const { error } = await supabaseClient.from("student_plans").upsert({
             user_id: signedInUser.id,
             current_grade: currentGrade,
-            courses: planCourses.map(({ id, grade, courseId, customTitle, source }) => ({
+            courses: planCourses.map(({ id, grade, courseId, customTitle, source, extraSlot }) => ({
                 id,
                 grade,
                 courseId: courseId || null,
                 customTitle: customTitle || null,
-                source
+                source,
+                extraSlot
             })),
             transcript_path: uploadedPath || previousPath,
             updated_at: new Date().toISOString()
@@ -694,7 +741,7 @@ function csvCell(value) {
 function downloadCsv() {
     const rows = [["Grade", "Course", "Subject", "Status"]];
     for (let grade = 9; grade <= 12; grade += 1) {
-        for (const course of planCourses.filter((item) => item.grade === grade)) {
+        for (const course of planCourses.filter((item) => item.grade === grade && (item.courseId || item.customTitle))) {
             const catalogCourse = coursesById.get(course.courseId);
             rows.push([
                 `Grade ${grade}`,
