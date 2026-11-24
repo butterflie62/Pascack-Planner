@@ -145,6 +145,17 @@ const courseGrid = document.querySelector("#course-grid");
 const count = document.querySelector("#course-count");
 const noCourses = document.querySelector("#no-courses");
 const specialMessage = document.querySelector("#special-program-message");
+const courseAddStatus = document.querySelector("#course-add-status");
+
+function currentStudentGrade() {
+    try {
+        return Number(window.StudentPlanner?.load().profile.currentGrade) || 9;
+    } catch (error) {
+        courseAddStatus.textContent = `Your saved student data could not be read: ${error.message}`;
+        courseAddStatus.classList.add("is-error");
+        return 9;
+    }
+}
 
 function showUnknownSubject() {
     document.title = "Subject not found | Pascack Planner";
@@ -199,6 +210,49 @@ function courseCard(course) {
         detail.textContent = "Ask about placement or teacher approval before choosing this course.";
     }
     card.append(detail);
+
+    if (window.StudentPlanner) {
+        const offeredGrades = course.grades
+            ? course.grades.split(",").map((grade) => grade.trim()).filter((grade) => ["9", "10", "11", "12"].includes(grade))
+            : ["9", "10", "11", "12"];
+        if (offeredGrades.length) {
+            const gradeLabel = document.createElement("label");
+            gradeLabel.className = "planner-field course-plan-grade";
+            const gradeSelect = document.createElement("select");
+            gradeSelect.setAttribute("aria-label", `Grade to plan ${course.title}`);
+            for (const grade of offeredGrades) {
+                const option = document.createElement("option");
+                option.value = grade;
+                option.textContent = `Grade ${grade}`;
+                gradeSelect.append(option);
+            }
+            const preferredGrade = String(currentStudentGrade());
+            gradeSelect.value = offeredGrades.includes(preferredGrade) ? preferredGrade : offeredGrades[0];
+            gradeLabel.append(gradeSelect);
+
+            const addButton = document.createElement("button");
+            addButton.type = "button";
+            addButton.className = "button button-outline course-plan-add";
+            addButton.textContent = "Add to my schedule";
+            addButton.addEventListener("click", () => {
+                try {
+                    const alreadyPlanned = window.StudentPlanner.schedulePlan().courses.some((item) =>
+                        item.courseId === `${program.id}:${program.courses.indexOf(course)}` &&
+                        item.grade === Number(gradeSelect.value)
+                    );
+                    window.StudentPlanner.addScheduleCourse(program.id, course.title, gradeSelect.value);
+                    courseAddStatus.classList.remove("is-error");
+                    courseAddStatus.textContent = alreadyPlanned
+                        ? `${course.title} is already in your Grade ${gradeSelect.value} plan.`
+                        : `${course.title} added to Grade ${gradeSelect.value}. Your device draft is updated.`;
+                } catch (error) {
+                    courseAddStatus.classList.add("is-error");
+                    courseAddStatus.textContent = error.message || "Could not add that course to your schedule.";
+                }
+            });
+            card.append(gradeLabel, addButton);
+        }
+    }
     return card;
 }
 

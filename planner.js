@@ -11,6 +11,14 @@ const plannerApp = document.querySelector("#planner-app");
 const planStatus = document.querySelector("#plan-status");
 const currentGradeSelect = document.querySelector("#current-grade");
 const yearPlanGrid = document.querySelector("#year-plan-grid");
+const quickClassForm = document.querySelector("#quick-class-form");
+const quickSubjectSelect = document.querySelector("#quick-subject");
+const quickCourseSelect = document.querySelector("#quick-course");
+const quickGradeSelect = document.querySelector("#quick-grade");
+const quickStatusSelect = document.querySelector("#quick-status");
+const requirementProgress = document.querySelector("#requirement-progress");
+const suggestedCourseList = document.querySelector("#suggested-course-list");
+const recommendationCopy = document.querySelector("#recommendation-copy");
 const transcriptFileInput = document.querySelector("#transcript-file");
 const transcriptStatus = document.querySelector("#transcript-status");
 const transcriptReview = document.querySelector("#transcript-review");
@@ -21,13 +29,19 @@ const signUpButton = document.querySelector("#sign-up-button");
 const googleSignInButton = document.querySelector("#google-sign-in-button");
 const savePlanButton = document.querySelector("#save-plan-button");
 const deletePlanButton = document.querySelector("#delete-plan-button");
+const signOutButton = document.querySelector("#sign-out-button");
+const planStorageLabel = document.querySelector("#plan-storage-label");
+const accountAccess = document.querySelector(".planner-account-access");
+const ACCOUNT_BACKUP_KEY = "pascack-planner-device-draft-v1";
 
 const catalogCourses = (window.PASCACK_PROGRAMS || []).flatMap((program) =>
     program.courses.map((course, index) => ({
         id: `${program.id}:${index}`,
         title: course.title,
         subjectId: program.id,
-        subject: program.name
+        subject: program.name,
+        grades: course.grades || "",
+        prerequisite: course.prerequisite || ""
     }))
 );
 const coursesById = new Map(catalogCourses.map((course) => [course.id, course]));
@@ -40,6 +54,7 @@ let transcriptPath = null;
 let pendingTranscriptFile = null;
 let transcriptMatches = [];
 let planDirty = false;
+let deviceDraftSnapshot;
 
 function setStatus(element, message, isError = false) {
     element.textContent = message;
@@ -63,7 +78,14 @@ function createCourseRow(course = {}) {
         grade: Number(course.grade),
         courseId: coursesById.has(course.courseId) ? course.courseId : "",
         customTitle: typeof course.customTitle === "string" ? course.customTitle.slice(0, 160) : "",
-        source: course.source === "transcript" ? "transcript" : "planned"
+        subjectId: typeof course.subjectId === "string" ? course.subjectId : "",
+        source: ["transcript", "manual"].includes(course.source) ? course.source : "planned",
+        status: ["planned", "current", "completed"].includes(course.status)
+            ? course.status
+            : course.source === "transcript" ? "completed" : "planned",
+        mark: typeof course.mark === "string" ? course.mark.slice(0, 12) : "",
+        credits: Number.isFinite(Number(course.credits)) ? Number(course.credits) : 5,
+        requirement: typeof course.requirement === "string" ? course.requirement : ""
     };
 }
 
@@ -222,6 +244,7 @@ function addCourseSelect(row, locked, onCourseChange) {
     select.addEventListener("change", () => {
         row.courseId = select.value === "__custom" ? "" : select.value;
         row.customTitle = select.value === "__custom" ? row.customTitle : "";
+        row.subjectId = coursesById.get(row.courseId)?.subjectId || row.subjectId;
         customInput.hidden = select.value !== "__custom";
         onCourseChange();
         setDirty();
@@ -247,9 +270,229 @@ function addCourseSelect(row, locked, onCourseChange) {
     return field;
 }
 
+function populateCourseOptions(subjectSelect, courseSelect) {
+    const previousSubject = subjectSelect.value;
+    subjectSelect.replaceChildren();
+    for (const program of window.PASCACK_PROGRAMS || []) {
+        const option = document.createElement("option");
+        option.value = program.id;
+        option.textContent = program.name;
+        subjectSelect.append(option);
+    }
+    if ([...subjectSelect.options].some((option) => option.value === previousSubject)) {
+        subjectSelect.value = previousSubject;
+    }
+
+    const program = window.PASCACK_PROGRAMS.find((item) => item.id === subjectSelect.value);
+    courseSelect.replaceChildren();
+    for (const [index, course] of (program?.courses || []).entries()) {
+        const option = document.createElement("option");
+        option.value = `${program.id}:${index}`;
+        option.textContent = course.title;
+        courseSelect.append(option);
+    }
+}
+
+function rowCourse(row) {
+    const catalogCourse = coursesById.get(row.courseId);
+    if (catalogCourse) return catalogCourse;
+    return row.customTitle
+        ? { title: row.customTitle, subjectId: row.subjectId || "other-programs", subject: "Custom course", prerequisite: "" }
+        : null;
+}
+
+function requirementForCourse(course) {
+    return StudentPlanner.requirementForCourse(course.subjectId, course.title);
+}
+
+function normalizedCourseText(value) {
+    return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function subjectIdsInPrerequisite(text) {
+    const rules = [
+        { pattern: /english|language arts/, id: "english" },
+        { pattern: /history|social studies/, id: "social-studies" },
+        { pattern: /math|algebra|geometry/, id: "mathematics" },
+        { pattern: /science|biology|chemistry|physics/, id: "science" },
+        { pattern: /world language|spanish|french|italian|chinese/, id: "world-languages" },
+        { pattern: /\bart\b|studio/, id: "art" }
+    ];
+    return rules.filter((rule) => rule.pattern.test(text)).map((rule) => rule.id);
+}
+
+function prerequisiteSatisfied(course) {
+    const prerequisite = normalizedCourseText(course.prerequisite);
+    if (!prerequisite) return false;
+    const earlierClasses = planCourses
+        .map((row) => ({ row, course: rowCourse(row) }))
+        .filter(({ row, course: prior }) =>
+            prior && Number(row.grade) < currentGrade && ["completed", "current"].includes(row.status)
+        );
+    const gradeReferences = [...prerequisite.matchAll(/\b(\d+)(?:st|nd|rd|th)\s*grade\b/g)];
+    if (gradeReferences.length) {
+        for (let index = 0; index < gradeReferences.length; index += 1) {
+            const reference = gradeReferences[index];
+            const end = gradeReferences[index + 1]?.index ?? prerequisite.length;
+            const requirementText = prerequisite.slice(reference.index, end).split(";")[0];
+            const subjects = subjectIdsInPrerequisite(requirementText);
+            if (!subjects.length || Number(reference[1]) >= currentGrade) return false;
+            for (const subjectId of subjects) {
+                if (!earlierClasses.some(({ row, course: prior }) =>
+                    row.grade === Number(reference[1]) && prior.subjectId === subjectId
+                )) return false;
+            }
+        }
+        return true;
+    }
+
+    if (/\band\b|,|;/.test(prerequisite) || /audition|placement|recommendation|portfolio|average|proficiency/.test(prerequisite)) {
+        return false;
+    }
+    return earlierClasses.some(({ course: prior }) => {
+        const title = normalizedCourseText(prior.title);
+        return title.length > 5 && prerequisite.includes(title);
+    });
+}
+
+function commonStartingCourses() {
+    const commonCourses = {
+        9: [["english", /^english i\b/i], ["social-studies", /^world history$/i], ["science", /^biology$/i]],
+        10: [["english", /^english ii\b/i], ["social-studies", /^u\. s\. history i$/i], ["science", /^chemistry$/i]],
+        11: [["english", /^english iii\b/i], ["social-studies", /^u\. s\. history ii$/i], ["science", /^physics$/i]],
+        12: [["english", /^english iv\b/i]]
+    };
+    return (commonCourses[currentGrade] || []).flatMap(([subjectId, matcher]) => {
+        const course = catalogCourses.find((item) =>
+            item.subjectId === subjectId && matcher.test(item.title) &&
+            item.grades.split(",").map((grade) => grade.trim()).includes(String(currentGrade))
+        );
+        return course && !planCourses.some((row) => row.courseId === course.id && row.grade === currentGrade)
+            ? [{ course, reason: "A common core starting point" }]
+            : [];
+    });
+}
+
+function recommendations() {
+    const eligible = catalogCourses.filter((course) =>
+        course.grades.split(",").map((grade) => grade.trim()).includes(String(currentGrade)) &&
+        course.prerequisite && prerequisiteSatisfied(course) &&
+        !planCourses.some((row) => row.courseId === course.id && row.grade === currentGrade)
+    );
+    const seen = new Set();
+    const personalized = eligible.filter((course) => {
+        const normalizedTitle = normalizedCourseText(course.title);
+        if (seen.has(normalizedTitle)) return false;
+        seen.add(normalizedTitle);
+        return true;
+    }).slice(0, 3).map((course) => ({ course, reason: "Matches the prerequisites in your plan" }));
+    return personalized.length ? { courses: personalized, personalized: true } :
+        { courses: commonStartingCourses(), personalized: false };
+}
+
+function renderRequirementProgress() {
+    requirementProgress.replaceChildren();
+    let state;
+    try {
+        state = StudentPlanner.load();
+    } catch (error) {
+        const message = document.createElement("p");
+        message.className = "planner-copy";
+        message.textContent = error.message;
+        requirementProgress.append(message);
+        return;
+    }
+    const totals = StudentPlanner.creditTotals(state);
+    const total = document.createElement("p");
+    total.className = "requirement-total";
+    total.textContent = `${totals.earned.toFixed(1)} earned/current · ${totals.planned.toFixed(1)} planned / 120 credits estimated`;
+    requirementProgress.append(total);
+    const essential = ["english", "physicalEducation", "mathematics", "science", "socialStudies", "worldLanguages", "arts", "lifeCareers", "financialLiteracy"];
+    for (const id of essential) {
+        const target = StudentPlanner.requirementTargets[id];
+        const progress = totals.requirements[id];
+        const achieved = progress.earned + progress.planned;
+        const row = document.createElement("div");
+        row.className = "requirement-progress-row";
+        const label = document.createElement("span");
+        label.textContent = StudentPlanner.requirementLabels[id];
+        const amount = document.createElement("small");
+        amount.textContent = `${achieved.toFixed(1)} / ${target} est. credits`;
+        const meter = document.createElement("progress");
+        meter.max = target;
+        meter.value = Math.min(achieved, target);
+        meter.setAttribute("aria-label", `${StudentPlanner.requirementLabels[id]}: ${amount.textContent}`);
+        const info = document.createElement("div");
+        info.className = "requirement-progress-info";
+        info.append(label, amount);
+        row.append(info, meter);
+        requirementProgress.append(row);
+    }
+}
+
+function renderRecommendations() {
+    suggestedCourseList.replaceChildren();
+    const result = recommendations();
+    recommendationCopy.textContent = result.personalized
+        ? "These catalog options match prerequisites in the classes you entered."
+        : "Add completed/current courses above to unlock suggestions based on your own prerequisites. These common starting points are just examples.";
+    if (!result.courses.length) {
+        const message = document.createElement("p");
+        message.className = "planner-copy";
+        message.textContent = "Your schedule already includes these starting points. Browse the catalog to find electives or other pathways.";
+        suggestedCourseList.append(message);
+        return;
+    }
+    for (const { course, reason } of result.courses) {
+        const card = document.createElement("article");
+        card.className = "suggested-course-card";
+        const subject = document.createElement("span");
+        subject.className = "suggested-course-subject";
+        subject.textContent = course.subject;
+        const title = document.createElement("h4");
+        title.textContent = course.title;
+        const note = document.createElement("p");
+        note.textContent = reason;
+        const details = document.createElement("details");
+        const summary = document.createElement("summary");
+        summary.textContent = "Why this course?";
+        const prerequisite = document.createElement("p");
+        prerequisite.textContent = course.prerequisite
+            ? `Catalog prerequisite: ${course.prerequisite}`
+            : "No prerequisite is listed in the catalog.";
+        details.append(summary, prerequisite);
+        const add = document.createElement("button");
+        add.type = "button";
+        add.className = "button button-outline";
+        add.textContent = "Add to my schedule";
+        add.addEventListener("click", () => {
+            planCourses.push(createCourseRow({
+                grade: currentGrade,
+                courseId: course.id,
+                source: "planned",
+                status: "planned",
+                requirement: requirementForCourse(course)
+            }));
+            renderPlan();
+            setDirty();
+        });
+        card.append(subject, title, note, details, add);
+        suggestedCourseList.append(card);
+    }
+}
+
 function setDirty(message = "Unsaved changes.") {
     planDirty = true;
-    setStatus(planStatus, message);
+    try {
+        StudentPlanner.saveSchedulePlan(currentGrade, planCourses);
+        setStatus(planStatus, signedInUser
+            ? `${message} Your latest draft is also saved on this device. Save plan to sync it to your account.`
+            : "Draft saved on this device. Sign in only if you want to sync it across devices.");
+    } catch (error) {
+        setStatus(planStatus, error.message, true);
+    }
+    renderRequirementProgress();
+    renderRecommendations();
 }
 
 function renderPlan() {
@@ -312,10 +555,33 @@ function renderPlan() {
             gradeCell.append(gradeSelect);
 
             const sourceCell = document.createElement("td");
-            const source = document.createElement("span");
-            source.className = "sheet-source";
-            source.textContent = course.source === "transcript" ? "Transcript match" : "Planned";
-            sourceCell.append(source);
+            const statusSelect = document.createElement("select");
+            statusSelect.className = "plan-status-select";
+            statusSelect.setAttribute("aria-label", `Status for ${catalogCourse?.title || course.customTitle || "course"}`);
+            for (const [value, label] of [
+                ["completed", "Completed"],
+                ["current", "Taking now"],
+                ["planned", "Plan to take"]
+            ]) {
+                const option = document.createElement("option");
+                option.value = value;
+                option.textContent = label;
+                statusSelect.append(option);
+            }
+            statusSelect.value = course.status;
+            statusSelect.addEventListener("change", () => {
+                course.status = statusSelect.value;
+                if (course.status === "completed" && course.source === "planned") course.source = "manual";
+                renderPlan();
+                setDirty();
+            });
+            sourceCell.append(statusSelect);
+            if (course.source === "transcript") {
+                const source = document.createElement("small");
+                source.className = "sheet-source";
+                source.textContent = "Transcript";
+                sourceCell.append(source);
+            }
 
             const removeButton = document.createElement("button");
             removeButton.className = "sheet-remove";
@@ -339,7 +605,11 @@ function renderPlan() {
             addButton.type = "button";
             addButton.textContent = "+ Add a course";
             addButton.addEventListener("click", () => {
-                planCourses.push(createCourseRow({ grade, source: "planned" }));
+                planCourses.push(createCourseRow({
+                    grade,
+                    source: "planned",
+                    status: grade === currentGrade ? "current" : "planned"
+                }));
                 renderPlan();
                 setDirty();
             });
@@ -351,6 +621,40 @@ function renderPlan() {
             yearPlanGrid.append(addRow);
         }
     }
+    renderRequirementProgress();
+    renderRecommendations();
+}
+
+function addQuickClass(event) {
+    event.preventDefault();
+    const course = coursesById.get(quickCourseSelect.value);
+    if (!course) {
+        setStatus(planStatus, "Choose a course before adding it.", true);
+        return;
+    }
+
+    const grade = Number(quickGradeSelect.value);
+    if (planCourses.some((row) => row.courseId === course.id && row.grade === grade)) {
+        setStatus(planStatus, `${course.title} is already in your Grade ${grade} plan.`);
+        return;
+    }
+
+    planCourses.push(createCourseRow({
+        grade,
+        courseId: course.id,
+        subjectId: course.subjectId,
+        source: "manual",
+        status: quickStatusSelect.value,
+        requirement: requirementForCourse(course)
+    }));
+    renderPlan();
+    setDirty(`${course.title} added to Grade ${grade}.`);
+    quickClassForm.reset();
+    quickSubjectSelect.value = course.subjectId;
+    populateCourseOptions(quickSubjectSelect, quickCourseSelect);
+    quickCourseSelect.value = course.id;
+    quickGradeSelect.value = String(currentGrade);
+    quickStatusSelect.value = "completed";
 }
 
 function renderTranscriptMatches() {
@@ -426,56 +730,100 @@ async function loadPlan() {
             .maybeSingle();
     } catch (error) {
         setStatus(planStatus, `Could not load your plan: ${error.message || "network request failed"}`, true);
-        planCourses = [];
-        transcriptPath = null;
+        renderPlan();
         return;
     }
     const { data, error } = response;
 
     if (error) {
         setStatus(planStatus, `Could not load your plan: ${error.message}`, true);
-        planCourses = [];
-        transcriptPath = null;
+        renderPlan();
         return;
     }
 
     if (data) {
-        currentGrade = Number(data.current_grade);
-        if (!Number.isInteger(currentGrade) || currentGrade < 9 || currentGrade > 12 || !Array.isArray(data.courses)) {
+        const savedGrade = Number(data.current_grade);
+        if (!Number.isInteger(savedGrade) || savedGrade < 9 || savedGrade > 12 || !Array.isArray(data.courses)) {
             setStatus(planStatus, "The saved plan has invalid data. Contact the site administrator before editing it.", true);
             return;
         }
-        planCourses = data.courses.map((course) => createCourseRow(course)).filter((course) =>
-            Number.isInteger(course.grade) && course.grade >= 9 && course.grade <= 12
-        );
+        const loadedCourses = data.courses.map((course) => createCourseRow(course));
+        if (loadedCourses.some((course) => !Number.isInteger(course.grade) || course.grade < 9 || course.grade > 12)) {
+            setStatus(planStatus, "The saved plan contains a course with an invalid grade. It was not changed.", true);
+            return;
+        }
+        currentGrade = savedGrade;
+        planCourses = loadedCourses;
         transcriptPath = data.transcript_path;
         planDirty = false;
+        try {
+            StudentPlanner.saveSchedulePlan(currentGrade, planCourses);
+        } catch (error) {
+            setStatus(planStatus, `Your account plan loaded, but the device draft could not be updated: ${error.message}`, true);
+            renderPlan();
+            return;
+        }
         setStatus(planStatus, "Your saved plan is up to date.");
     } else {
-        currentGrade = 9;
-        planCourses = [];
+        planDirty = planCourses.length > 0;
         transcriptPath = null;
-        planDirty = false;
-        setStatus(planStatus, "Start a plan by choosing your current grade or importing a transcript.");
+        setStatus(planStatus, planDirty
+            ? "Your device draft is ready. Save plan to keep it with this account."
+            : "Your plan is ready. Changes save on this device automatically.");
     }
 
     currentGradeSelect.value = String(currentGrade);
+    quickGradeSelect.value = String(currentGrade);
     renderPlan();
 }
 
 function showSignedInState(user) {
+    if (!signedInUser) {
+        const draft = localStorage.getItem(StudentPlanner.STORAGE_KEY);
+        if (draft && !localStorage.getItem(ACCOUNT_BACKUP_KEY)) {
+            localStorage.setItem(ACCOUNT_BACKUP_KEY, draft);
+        }
+    }
     signedInUser = user;
-    authPanel.hidden = true;
-    plannerApp.hidden = false;
+    accountAccess.hidden = true;
+    signOutButton.hidden = false;
+    deletePlanButton.hidden = false;
+    planStorageLabel.textContent = "Signed in · save to sync your plan";
     document.querySelector("#signed-in-email").textContent = user.email || "Signed in";
     loadPlan();
 }
 
 function showSignedOutState() {
     signedInUser = null;
-    plannerApp.hidden = true;
-    authPanel.hidden = false;
-    planCourses = [];
+    accountAccess.hidden = false;
+    accountAccess.open = false;
+    signOutButton.hidden = true;
+    deletePlanButton.hidden = true;
+    planStorageLabel.textContent = "Private draft on this device";
+    document.querySelector("#signed-in-email").textContent = "No account needed to explore and edit this plan.";
+    const savedDeviceDraft = localStorage.getItem(ACCOUNT_BACKUP_KEY);
+    let restoreError;
+    if (savedDeviceDraft && !planDirty) {
+        try {
+            localStorage.setItem(StudentPlanner.STORAGE_KEY, savedDeviceDraft);
+            const draft = StudentPlanner.schedulePlan();
+            currentGrade = draft.currentGrade;
+            planCourses = draft.courses.map((course) => createCourseRow(course));
+        } catch (error) {
+            restoreError = `Could not restore the device draft: ${error.message}`;
+        }
+    } else if (savedDeviceDraft) {
+        planCourses = planCourses.map((course) => createCourseRow(course));
+    } else {
+        try {
+            const draft = StudentPlanner.schedulePlan();
+            currentGrade = draft.currentGrade;
+            planCourses = draft.courses.map((course) => createCourseRow(course));
+        } catch (error) {
+            restoreError = `Could not load the device draft: ${error.message}`;
+        }
+    }
+    localStorage.removeItem(ACCOUNT_BACKUP_KEY);
     transcriptPath = null;
     pendingTranscriptFile = null;
     transcriptMatches = [];
@@ -483,6 +831,10 @@ function showSignedOutState() {
     transcriptFileInput.value = "";
     transcriptStorageConsent.checked = false;
     transcriptReview.hidden = true;
+    currentGradeSelect.value = String(currentGrade);
+    quickGradeSelect.value = String(currentGrade);
+    renderPlan();
+    setStatus(planStatus, restoreError || "Draft saved on this device. Sign in only if you want to sync it across devices.", Boolean(restoreError));
 }
 
 async function handleAuth(mode) {
@@ -616,7 +968,9 @@ function importTranscriptMatches() {
 
 async function savePlan() {
     if (!signedInUser) {
-        setStatus(planStatus, "Sign in before saving a plan.", true);
+        accountAccess.open = true;
+        authPanel.focus();
+        setStatus(planStatus, "Your draft is already saved on this device. Sign in if you want to save it across devices.");
         return;
     }
     if (pendingTranscriptFile && !transcriptStorageConsent.checked) {
@@ -646,11 +1000,9 @@ async function savePlan() {
             user_id: signedInUser.id,
             current_grade: currentGrade,
             courses: planCourses.map(({ id, grade, courseId, customTitle, source }) => ({
-                id,
-                grade,
+                ...createCourseRow({ id, grade, courseId, customTitle, source }),
                 courseId: courseId || null,
-                customTitle: customTitle || null,
-                source
+                customTitle: customTitle || null
             })),
             transcript_path: uploadedPath || previousPath,
             updated_at: new Date().toISOString()
@@ -677,7 +1029,9 @@ async function savePlan() {
                 return;
             }
         }
-        setStatus(planStatus, "Plan saved. Your transcript PDF is stored in your private account folder.");
+        setStatus(planStatus, uploadedPath || transcriptPath
+            ? "Plan saved. Your transcript PDF is stored in your private account folder."
+            : "Plan saved to your account and on this device.");
     } catch (error) {
         setStatus(planStatus, error.message || "Could not save your plan.", true);
     } finally {
@@ -700,7 +1054,8 @@ function downloadCsv() {
                 `Grade ${grade}`,
                 catalogCourse?.title || course.customTitle || "",
                 catalogCourse?.subject || "",
-                course.source === "transcript" ? "Transcript match" : "Planned"
+                course.status === "completed" ? "Completed" :
+                    course.status === "current" ? "Taking now" : "Plan to take"
             ]);
         }
     }
@@ -734,6 +1089,9 @@ async function deletePlan() {
         transcriptFileInput.value = "";
         transcriptStorageConsent.checked = false;
         currentGradeSelect.value = "9";
+        quickGradeSelect.value = "9";
+        StudentPlanner.saveSchedulePlan(currentGrade, planCourses);
+        localStorage.removeItem(ACCOUNT_BACKUP_KEY);
         renderPlan();
         setStatus(planStatus, "Your saved plan and transcript PDF were deleted.");
     } catch (error) {
@@ -744,34 +1102,32 @@ async function deletePlan() {
 }
 
 function initialize() {
+    populateCourseOptions(quickSubjectSelect, quickCourseSelect);
+    quickGradeSelect.value = String(currentGrade);
+    quickStatusSelect.value = "completed";
+    try {
+        const draft = StudentPlanner.schedulePlan();
+        currentGrade = draft.currentGrade;
+        planCourses = draft.courses.map((course) => createCourseRow(course));
+        currentGradeSelect.value = String(currentGrade);
+        quickGradeSelect.value = String(currentGrade);
+        setStatus(planStatus, "Draft saved on this device. Sign in only if you want to sync it across devices.");
+    } catch (error) {
+        setStatus(planStatus, `Could not load the device draft: ${error.message}`, true);
+    }
+    renderPlan();
+
     authForm.addEventListener("submit", (event) => {
         event.preventDefault();
         handleAuth("signin");
     });
     signUpButton.addEventListener("click", () => handleAuth("signup"));
     googleSignInButton.addEventListener("click", handleGoogleSignIn);
-
-    if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !window.supabase?.createClient) {
-        setStatus(
-            authStatus,
-            "Sign-in is not configured yet. Add your Supabase project URL and public anon key, apply the SQL migration, and enable Google in Supabase Auth.",
-            true
-        );
-        return;
-    }
-
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    document.querySelector("#sign-out-button").addEventListener("click", async () => {
-        if ((planDirty || pendingTranscriptFile) && !window.confirm("You have unsaved changes. Sign out and discard them?")) return;
-        const { error } = await supabaseClient.auth.signOut();
-        if (error) {
-            setStatus(planStatus, `Could not sign out: ${error.message}`, true);
-            return;
-        }
-        showSignedOutState();
-    });
+    quickSubjectSelect.addEventListener("change", () => populateCourseOptions(quickSubjectSelect, quickCourseSelect));
+    quickClassForm.addEventListener("submit", addQuickClass);
     currentGradeSelect.addEventListener("change", () => {
         currentGrade = Number(currentGradeSelect.value);
+        quickGradeSelect.value = String(currentGrade);
         renderPlan();
         setDirty();
     });
@@ -787,6 +1143,35 @@ function initialize() {
     savePlanButton.addEventListener("click", savePlan);
     document.querySelector("#download-csv-button").addEventListener("click", downloadCsv);
     deletePlanButton.addEventListener("click", deletePlan);
+    const openAccountForHash = () => {
+        if (window.location.hash === "#auth-panel") {
+            accountAccess.open = true;
+            authPanel.focus();
+        }
+    };
+    openAccountForHash();
+    window.addEventListener("hashchange", openAccountForHash);
+
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !window.supabase?.createClient) {
+        setStatus(
+            authStatus,
+            "Sign-in is not configured yet. Add your Supabase project URL and public anon key, apply the SQL migration, and enable Google in Supabase Auth.",
+            true
+        );
+        renderPlan();
+        return;
+    }
+
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    signOutButton.addEventListener("click", async () => {
+        if (pendingTranscriptFile && !window.confirm("The selected transcript PDF has not been saved. Sign out and discard the PDF? Your course draft will stay on this device.")) return;
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) {
+            setStatus(planStatus, `Could not sign out: ${error.message}`, true);
+            return;
+        }
+        showSignedOutState();
+    });
 
     supabaseClient.auth.getSession().then(({ data, error }) => {
         if (error) {
@@ -794,6 +1179,12 @@ function initialize() {
             return;
         }
         if (data.session) showSignedInState(data.session.user);
+    }).catch((error) => {
+        setStatus(authStatus, `Could not restore your sign-in: ${error.message || "request failed"}`, true);
+    });
+
+    supabaseClient.auth.onAuthStateChange((_event, session) => {
+        if (session?.user && !signedInUser) showSignedInState(session.user);
     });
 }
 
