@@ -14,6 +14,22 @@ const COURSE_SLOT_SUGGESTIONS = [
     "Elective",
     "Elective"
 ];
+const CORE_COURSE_SUBJECTS = new Set([
+    "english",
+    "social-studies",
+    "mathematics",
+    "science",
+    "health-physical-education",
+    "world-languages"
+]);
+const COURSE_SLOT_SUGGESTED_SUBJECTS = {
+    1: "mathematics",
+    2: "english",
+    3: "social-studies",
+    4: "science",
+    5: "health-physical-education",
+    6: "world-languages"
+};
 
 const authPanel = document.querySelector("#auth-panel");
 const authForm = document.querySelector("#auth-form");
@@ -32,21 +48,43 @@ const signUpButton = document.querySelector("#sign-up-button");
 const googleSignInButton = document.querySelector("#google-sign-in-button");
 const savePlanButton = document.querySelector("#save-plan-button");
 const deletePlanButton = document.querySelector("#delete-plan-button");
+const coursePickerDialog = document.querySelector("#course-picker-dialog");
+const coursePickerSlotLabel = document.querySelector("#course-picker-slot-label");
+const coursePickerSearch = document.querySelector("#course-picker-search");
+const coursePickerSearchResults = document.querySelector("#course-picker-search-results");
+const coursePickerSelect = document.querySelector("#course-picker-select");
+const customCourseField = document.querySelector("#custom-course-field");
+const customCourseTitle = document.querySelector("#custom-course-title");
+const coursePickerError = document.querySelector("#course-picker-error");
 
 const catalogCourses = (window.PASCACK_PROGRAMS || []).flatMap((program) =>
     program.courses.map((course, index) => ({
         id: `${program.id}:${index}`,
         title: course.title,
         subjectId: program.id,
-        subject: program.name
+        subject: program.name,
+        grades: course.grades || "",
+        prerequisite: course.prerequisite || ""
     }))
 ).concat({
     id: "pascack-period",
     title: "Pascack Period",
     subjectId: "pascack-period",
-    subject: "Free period"
+    subject: "Free period",
+    grades: "",
+    prerequisite: ""
 });
 const coursesById = new Map(catalogCourses.map((course) => [course.id, course]));
+const HEALTH_PE_COURSE_IDS = new Set(["health-physical-education:0", "health-physical-education:1", "health-pe"]);
+const HEALTH_PE_COMBINED_COURSE = {
+    id: "health-pe",
+    title: "Health & Physical Education",
+    subjectId: "health-physical-education",
+    subject: "Health & Physical Education",
+    grades: "9, 10, 11, 12",
+    prerequisite: ""
+};
+coursesById.set(HEALTH_PE_COMBINED_COURSE.id, HEALTH_PE_COMBINED_COURSE);
 
 let supabaseClient;
 let signedInUser;
@@ -56,6 +94,7 @@ let transcriptPath = null;
 let pendingTranscriptFile = null;
 let transcriptMatches = [];
 let planDirty = false;
+let activeCoursePicker = null;
 const historyEditGrades = new Set();
 
 function setStatus(element, message, isError = false) {
@@ -205,65 +244,303 @@ function findTranscriptMatches(lines) {
     return [...matchesByCourseAndGrade.values()];
 }
 
-function addCourseSelect(row, locked, slotNumber, onCourseChange) {
-    const select = document.createElement("select");
-    select.setAttribute("aria-label", `Course slot ${slotNumber} for grade ${row.grade}`);
-    select.disabled = locked;
+function courseTitleForRow(row) {
+    return coursesById.get(row.courseId)?.title || row.customTitle || "";
+}
 
-    const prompt = document.createElement("option");
-    prompt.value = "";
-    const suggestion = COURSE_SLOT_SUGGESTIONS[slotNumber - 1] || "Elective or other";
-    prompt.textContent = `Choose a course (suggested: ${suggestion})`;
-    select.append(prompt);
+function isSuggestedCourse(course, slotNumber) {
+    const suggestedSubject = COURSE_SLOT_SUGGESTED_SUBJECTS[slotNumber];
 
+    if (suggestedSubject && course.subjectId === suggestedSubject) return true;
+    if (slotNumber === 6 || slotNumber >= 7) return !CORE_COURSE_SUBJECTS.has(course.subjectId);
+    return false;
+}
+
+function appendCourseOptions(parent, courses) {
     const groups = new Map();
-    for (const course of catalogCourses) {
+    for (const course of courses) {
         if (!groups.has(course.subject)) groups.set(course.subject, []);
         groups.get(course.subject).push(course);
     }
-    for (const [subject, courses] of groups) {
+
+    for (const [subject, subjectCourses] of groups) {
         const group = document.createElement("optgroup");
         group.label = subject;
-        for (const course of courses) {
+        for (const course of subjectCourses) {
             const option = document.createElement("option");
             option.value = course.id;
             option.textContent = course.title;
             group.append(option);
         }
-        select.append(group);
+        parent.append(group);
     }
+}
+
+function renderCoursePickerOptions(row, slotNumber) {
+    coursePickerSelect.replaceChildren();
+    const suggestion = COURSE_SLOT_SUGGESTIONS[slotNumber - 1] || "Elective or other";
+    const dropdownCourses = catalogCourses
+        .filter((course) => !HEALTH_PE_COURSE_IDS.has(course.id))
+        .concat(HEALTH_PE_COMBINED_COURSE);
+    const selectableCourses = dropdownCourses.filter((course) =>
+        courseAvailableForGrade(course, row.grade)
+        && courseSelectableForRow(course, row)
+    );
+    const suggestedGroup = document.createElement("optgroup");
+    suggestedGroup.label = `Suggested: ${suggestion}`;
+    const suggestedCourses = selectableCourses.filter((course) => isSuggestedCourse(course, slotNumber));
+    for (const course of suggestedCourses) {
+        const option = document.createElement("option");
+        option.value = course.id;
+        option.textContent = course.title === course.subject ? course.title : `${course.title} · ${course.subject}`;
+        suggestedGroup.append(option);
+    }
+    if (!suggestedCourses.length) {
+        const option = document.createElement("option");
+        option.disabled = true;
+        option.textContent = "No courses in this suggested group";
+        suggestedGroup.append(option);
+    }
+    coursePickerSelect.append(suggestedGroup);
+    appendCourseOptions(
+        coursePickerSelect,
+        selectableCourses.filter((course) => !isSuggestedCourse(course, slotNumber))
+    );
 
     const customOption = document.createElement("option");
     customOption.value = "__custom";
     customOption.textContent = "Other / custom course";
-    select.append(customOption);
-    select.value = row.customTitle ? "__custom" : row.courseId;
-    select.addEventListener("change", () => {
-        row.courseId = select.value === "__custom" ? "" : select.value;
-        row.customTitle = select.value === "__custom" ? row.customTitle : "";
-        customInput.hidden = select.value !== "__custom";
-        onCourseChange();
-        setDirty();
-    });
+    coursePickerSelect.append(customOption);
 
-    const customInput = document.createElement("input");
-    customInput.type = "text";
-    customInput.maxLength = 160;
-    customInput.placeholder = "Enter course title";
-    customInput.value = row.customTitle;
-    customInput.setAttribute("aria-label", `Custom course title for grade ${row.grade}, slot ${slotNumber}`);
-    customInput.hidden = !row.customTitle;
-    customInput.disabled = locked;
-    customInput.addEventListener("input", () => {
-        row.customTitle = customInput.value;
-        onCourseChange();
-        setDirty();
-    });
+    const selectedValue = row.customTitle
+        ? "__custom"
+        : HEALTH_PE_COURSE_IDS.has(row.courseId)
+            ? HEALTH_PE_COMBINED_COURSE.id
+            : row.courseId;
+    if (selectedValue) coursePickerSelect.value = selectedValue;
+    else coursePickerSelect.selectedIndex = -1;
+    customCourseField.hidden = selectedValue !== "__custom";
+    customCourseTitle.value = row.customTitle || "";
+}
 
+function courseAvailableForGrade(course, grade) {
+    if (course.id === "pascack-period") return true;
+    return course.grades.split(",").map((availableGrade) => availableGrade.trim()).includes(String(grade));
+}
+
+function courseCanBeRepeated(course) {
+    if (/financial literacy/i.test(course.title)) return false;
+    if (/\b(?:I|II|III|IV|V)\b/i.test(course.title)) return false;
+    if (course.id === "pascack-period") return true;
+    if (course.id === HEALTH_PE_COMBINED_COURSE.id) return true;
+    if (course.subjectId === "health-physical-education" && course.title === "Physical Education") return true;
+    if (course.subjectId === "music" && /\b(choir|band|orchestra|ensemble)\b/i.test(course.title)) return true;
+    if (course.subjectId === "art" && !/advanced placement/i.test(course.title)) return true;
+    return false;
+}
+
+function courseLevelKey(course) {
+    const title = course.title
+        .replace(/\bhonors\b/gi, "")
+        .replace(/\badvanced placement\b/gi, "")
+        .replace(/\bAP\b/gi, "")
+        .replace(/\b(?:enhanced|college prep|college-prep)\b/gi, "")
+        .replace(/[()]/g, " ")
+        .replace(/[^a-z0-9]+/gi, " ")
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLocaleLowerCase();
+    return `${course.subjectId}:${title}`;
+}
+
+function coursesShareLevel(course, plannedCourse) {
+    const planned = coursesById.get(plannedCourse.courseId);
+    if (!planned || planned.subjectId !== course.subjectId) return false;
+    return courseLevelKey(planned) === courseLevelKey(course);
+}
+
+function coursesShareHealthAndPeSlot(course, plannedCourse) {
+    const planned = coursesById.get(plannedCourse.courseId);
+    if (!planned || planned.subjectId !== "health-physical-education" || course.subjectId !== planned.subjectId) return false;
+    return HEALTH_PE_COURSE_IDS.has(course.id) && HEALTH_PE_COURSE_IDS.has(planned.id);
+}
+
+function courseSelectableForRow(course, currentRow) {
+    return !planCourses.some((plannedCourse) =>
+        plannedCourse.id !== currentRow?.id
+        && (
+            (
+                plannedCourse.grade === currentRow.grade
+                && (
+                    plannedCourse.courseId === course.id
+                    || coursesShareLevel(course, plannedCourse)
+                    || coursesShareHealthAndPeSlot(course, plannedCourse)
+                )
+            )
+            || (
+                plannedCourse.grade < currentRow.grade
+                && !courseCanBeRepeated(course)
+                && (plannedCourse.courseId === course.id || coursesShareLevel(course, plannedCourse))
+            )
+        )
+    );
+}
+
+function renderCoursePickerSearchResults() {
+    const query = coursePickerSearch.value.trim().toLocaleLowerCase();
+    coursePickerSearchResults.replaceChildren();
+    if (!query) {
+        coursePickerSearchResults.hidden = true;
+        return;
+    }
+
+    const matches = catalogCourses
+        .filter((course) =>
+            `${course.title} ${course.subject} ${course.grades} Grade ${course.grades} Grades ${course.grades} ${course.prerequisite}`
+                .toLocaleLowerCase()
+                .includes(query)
+        )
+        .concat(
+            "other / custom course".includes(query)
+                ? [{ id: "__custom", title: "Other / custom course", subject: "Custom course" }]
+                : []
+        );
+    coursePickerSearchResults.hidden = false;
+    if (!matches.length) {
+        const empty = document.createElement("p");
+        empty.className = "sheet-course-search-empty";
+        empty.textContent = "No matching courses. Try the dropdown to browse all courses.";
+        coursePickerSearchResults.append(empty);
+        return;
+    }
+
+    for (const course of matches.slice(0, 10)) {
+        const result = document.createElement("button");
+        result.type = "button";
+        result.className = "sheet-course-search-result";
+        result.textContent = `${course.title} · ${course.subject}`;
+        result.addEventListener("click", () => {
+            if (![...coursePickerSelect.options].some((option) => option.value === course.id)) {
+                let searchGroup = [...coursePickerSelect.querySelectorAll("optgroup")]
+                    .find((group) => group.label === "Selected from search");
+                if (!searchGroup) {
+                    searchGroup = document.createElement("optgroup");
+                    searchGroup.label = "Selected from search";
+                    coursePickerSelect.append(searchGroup);
+                }
+                const option = document.createElement("option");
+                option.value = course.id;
+                option.textContent = course.title === course.subject ? course.title : `${course.title} · ${course.subject}`;
+                searchGroup.append(option);
+            }
+            coursePickerSelect.value = course.id;
+            coursePickerSelect.dispatchEvent(new Event("change"));
+            coursePickerSearchResults.hidden = true;
+        });
+        coursePickerSearchResults.append(result);
+    }
+    if (matches.length > 10) {
+        const more = document.createElement("p");
+        more.className = "sheet-course-search-empty";
+        more.textContent = `Showing 10 of ${matches.length} matches. Refine your search to see more.`;
+        coursePickerSearchResults.append(more);
+    }
+}
+
+function addCourseSelect(row, locked, slotNumber, onCourseChange) {
     const field = document.createElement("div");
     field.className = "sheet-course-field";
-    field.append(select, customInput);
+
+    const courseName = document.createElement("span");
+    courseName.className = "sheet-selected-course-name";
+    courseName.textContent = courseTitleForRow(row) || "No course selected";
+
+    const chooseButton = document.createElement("button");
+    chooseButton.type = "button";
+    chooseButton.className = "sheet-course-picker-button";
+    chooseButton.textContent = courseTitleForRow(row) ? "Change course" : "Choose a course";
+    chooseButton.disabled = locked;
+    chooseButton.setAttribute("aria-label", `Choose a course for grade ${row.grade}, slot ${slotNumber}`);
+    chooseButton.addEventListener("click", () => {
+        activeCoursePicker = { row, onCourseChange, courseName, chooseButton };
+        coursePickerSlotLabel.textContent = `Grade ${row.grade} · Slot ${slotNumber} · Suggested: ${COURSE_SLOT_SUGGESTIONS[slotNumber - 1] || "Elective or other"}`;
+        coursePickerSearch.value = "";
+        coursePickerSearchResults.replaceChildren();
+        coursePickerSearchResults.hidden = true;
+        coursePickerError.textContent = "";
+        renderCoursePickerOptions(row, slotNumber);
+        coursePickerDialog.showModal();
+        coursePickerSearch.focus();
+    });
+
+    field.append(courseName, chooseButton);
     return field;
+}
+
+function closeCoursePicker() {
+    activeCoursePicker = null;
+    coursePickerDialog.close();
+}
+
+function confirmCoursePicker() {
+    if (!activeCoursePicker) return;
+    const selectedValue = coursePickerSelect.value;
+    if (!selectedValue) {
+        coursePickerError.textContent = "Choose a course from the dropdown or search results.";
+        return;
+    }
+
+    const { row, onCourseChange, courseName, chooseButton } = activeCoursePicker;
+    if (selectedValue === "__custom") {
+        const title = customCourseTitle.value.trim();
+        if (!title) {
+            coursePickerError.textContent = "Enter a title for the custom course.";
+            customCourseTitle.focus();
+            return;
+        }
+        row.courseId = "";
+        row.customTitle = title.slice(0, 160);
+    } else {
+        row.courseId = selectedValue;
+        row.customTitle = "";
+    }
+
+    if (!planCourses.includes(row)) planCourses.push(row);
+    courseName.textContent = courseTitleForRow(row);
+    chooseButton.textContent = "Change course";
+    onCourseChange();
+    setDirty();
+    closeCoursePicker();
+}
+
+function setupCoursePicker() {
+    document.querySelector("#close-course-picker").addEventListener("click", closeCoursePicker);
+    document.querySelector("#cancel-course-picker").addEventListener("click", closeCoursePicker);
+    document.querySelector("#confirm-course-picker").addEventListener("click", confirmCoursePicker);
+    coursePickerSelect.addEventListener("change", () => {
+        customCourseField.hidden = coursePickerSelect.value !== "__custom";
+        coursePickerError.textContent = "";
+        if (coursePickerSelect.value === "__custom") customCourseTitle.focus();
+    });
+    coursePickerSearch.addEventListener("input", renderCoursePickerSearchResults);
+    coursePickerSearch.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            const firstResult = coursePickerSearchResults.querySelector(".sheet-course-search-result");
+            if (firstResult) {
+                event.preventDefault();
+                firstResult.click();
+            }
+        } else if (event.key === "Escape") {
+            coursePickerSearch.value = "";
+            renderCoursePickerSearchResults();
+        }
+    });
+    customCourseTitle.addEventListener("input", () => {
+        coursePickerError.textContent = "";
+    });
+    coursePickerDialog.addEventListener("close", () => {
+        activeCoursePicker = null;
+    });
 }
 
 function setDirty(message = "Unsaved changes.") {
@@ -333,6 +610,9 @@ function renderPlan() {
                 }
                 const selectedCourse = coursesById.get(course.courseId);
                 subjectCell.textContent = selectedCourse?.subject || (course.customTitle ? "Custom course" : "—");
+                gradeSelect.disabled = locked;
+                gradeSelect.setAttribute("aria-label", `Grade for ${selectedCourse?.title || course.customTitle || "course"}`);
+                source.textContent = course.source === "transcript" ? "Transcript match" : "Planned";
             }));
 
             const gradeCell = document.createElement("td");
@@ -791,6 +1071,7 @@ async function deletePlan() {
 }
 
 function initialize() {
+    setupCoursePicker();
     authForm.addEventListener("submit", (event) => {
         event.preventDefault();
         handleAuth("signin");
