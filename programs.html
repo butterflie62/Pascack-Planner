@@ -6,6 +6,8 @@
     <meta name="theme-color" content="#12243a">
     <title>Explore Courses | Pascack Planner</title>
     <link href="./style.css" rel="stylesheet">
+    <script src="./program-data.js" defer></script>
+    <script src="./programs.js" defer></script>
 </head>
 <body>
     <header class="site-header">
@@ -34,6 +36,68 @@
         </section>
 
         <div class="section-wrap content-page">
+            <section class="catalog-finder" aria-labelledby="catalog-finder-title">
+                <div class="catalog-finder-heading">
+                    <p class="eyebrow eyebrow-dark">Search the catalog</p>
+                    <h2 class="content-heading" id="catalog-finder-title">Find a class</h2>
+                    <p class="section-intro">Search across departments or narrow the list by level, grade, and interests.</p>
+                </div>
+                <div class="catalog-filters">
+                    <label class="catalog-search">
+                        <span>Search courses</span>
+                        <input id="catalog-search" type="search" placeholder="Try “biology”, “honors”, or “coding”..." autocomplete="off">
+                    </label>
+                    <label>
+                        <span>Department</span>
+                        <select id="catalog-department">
+                            <option value="">All departments</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Class level</span>
+                        <select id="catalog-level">
+                            <option value="">All levels</option>
+                            <option value="honors">Honors</option>
+                            <option value="ap">AP</option>
+                            <option value="college-prep">College Prep / Standard</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Grade level</span>
+                        <select id="catalog-grade">
+                            <option value="">All grades</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                            <option value="11">Grade 11</option>
+                            <option value="12">Grade 12</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>Interest</span>
+                        <select id="catalog-interest">
+                            <option value="">Any interest</option>
+                            <option value="make">Make and create</option>
+                            <option value="solve">Solve problems</option>
+                            <option value="people">Understand people</option>
+                            <option value="communicate">Communicate and tell stories</option>
+                            <option value="business">Build a business or career</option>
+                            <option value="hands-on">Learn hands-on skills</option>
+                            <option value="perform">Perform and participate</option>
+                            <option value="explore">Explore the world</option>
+                        </select>
+                    </label>
+                    <button class="catalog-reset" id="catalog-reset" type="button">Clear filters</button>
+                </div>
+                <section class="catalog-results" id="catalog-results" aria-live="polite" aria-labelledby="catalog-results-title" hidden>
+                    <div class="catalog-results-heading">
+                        <h3 id="catalog-results-title">Matching courses</h3>
+                        <p id="catalog-count"></p>
+                    </div>
+                    <div class="catalog-result-grid" id="catalog-result-grid"></div>
+                    <p class="catalog-no-results" id="catalog-no-results" hidden>No courses match those filters. Try changing or clearing a filter.</p>
+                </section>
+            </section>
+
             <section aria-labelledby="subjects-title">
                 <div class="requirements-heading">
                     <div>
