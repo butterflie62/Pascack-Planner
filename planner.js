@@ -38,6 +38,14 @@ const plannerApp = document.querySelector("#planner-app");
 const planStatus = document.querySelector("#plan-status");
 const currentGradeSelect = document.querySelector("#current-grade");
 const yearPlanGrid = document.querySelector("#year-plan-grid");
+const quickClassForm = document.querySelector("#quick-class-form");
+const quickSubjectSelect = document.querySelector("#quick-subject");
+const quickCourseSelect = document.querySelector("#quick-course");
+const quickGradeSelect = document.querySelector("#quick-grade");
+const quickStatusSelect = document.querySelector("#quick-status");
+const requirementProgress = document.querySelector("#requirement-progress");
+const suggestedCourseList = document.querySelector("#suggested-course-list");
+const recommendationCopy = document.querySelector("#recommendation-copy");
 const transcriptFileInput = document.querySelector("#transcript-file");
 const transcriptStatus = document.querySelector("#transcript-status");
 const transcriptReview = document.querySelector("#transcript-review");
@@ -322,6 +330,16 @@ function renderCoursePickerOptions(row, slotNumber) {
     customCourseField.hidden = selectedValue !== "__custom";
     customCourseTitle.value = row.customTitle || "";
 }
+    select.append(customOption);
+    select.value = row.customTitle ? "__custom" : row.courseId;
+    select.addEventListener("change", () => {
+        row.courseId = select.value === "__custom" ? "" : select.value;
+        row.customTitle = select.value === "__custom" ? row.customTitle : "";
+        row.subjectId = coursesById.get(row.courseId)?.subjectId || row.subjectId;
+        customInput.hidden = select.value !== "__custom";
+        onCourseChange();
+        setDirty();
+    });
 
 function courseAvailableForGrade(course, grade) {
     if (course.id === "pascack-period") return true;
@@ -545,7 +563,16 @@ function setupCoursePicker() {
 
 function setDirty(message = "Unsaved changes.") {
     planDirty = true;
-    setStatus(planStatus, message);
+    try {
+        StudentPlanner.saveSchedulePlan(currentGrade, planCourses);
+        setStatus(planStatus, signedInUser
+            ? `${message} Your latest draft is also saved on this device. Save plan to sync it to your account.`
+            : "Draft saved on this device. Sign in only if you want to sync it across devices.");
+    } catch (error) {
+        setStatus(planStatus, error.message, true);
+    }
+    renderRequirementProgress();
+    renderRecommendations();
 }
 
 function renderPlan() {
@@ -676,6 +703,40 @@ function renderPlan() {
         addRow.append(addCell);
         yearPlanGrid.append(addRow);
     }
+    renderRequirementProgress();
+    renderRecommendations();
+}
+
+function addQuickClass(event) {
+    event.preventDefault();
+    const course = coursesById.get(quickCourseSelect.value);
+    if (!course) {
+        setStatus(planStatus, "Choose a course before adding it.", true);
+        return;
+    }
+
+    const grade = Number(quickGradeSelect.value);
+    if (planCourses.some((row) => row.courseId === course.id && row.grade === grade)) {
+        setStatus(planStatus, `${course.title} is already in your Grade ${grade} plan.`);
+        return;
+    }
+
+    planCourses.push(createCourseRow({
+        grade,
+        courseId: course.id,
+        subjectId: course.subjectId,
+        source: "manual",
+        status: quickStatusSelect.value,
+        requirement: requirementForCourse(course)
+    }));
+    renderPlan();
+    setDirty(`${course.title} added to Grade ${grade}.`);
+    quickClassForm.reset();
+    quickSubjectSelect.value = course.subjectId;
+    populateCourseOptions(quickSubjectSelect, quickCourseSelect);
+    quickCourseSelect.value = course.id;
+    quickGradeSelect.value = String(currentGrade);
+    quickStatusSelect.value = "completed";
 }
 
 function renderTranscriptMatches() {
@@ -751,47 +812,65 @@ async function loadPlan() {
             .maybeSingle();
     } catch (error) {
         setStatus(planStatus, `Could not load your plan: ${error.message || "network request failed"}`, true);
-        planCourses = [];
-        transcriptPath = null;
+        renderPlan();
         return;
     }
     const { data, error } = response;
 
     if (error) {
         setStatus(planStatus, `Could not load your plan: ${error.message}`, true);
-        planCourses = [];
-        transcriptPath = null;
+        renderPlan();
         return;
     }
 
     if (data) {
-        currentGrade = Number(data.current_grade);
-        if (!Number.isInteger(currentGrade) || currentGrade < 9 || currentGrade > 12 || !Array.isArray(data.courses)) {
+        const savedGrade = Number(data.current_grade);
+        if (!Number.isInteger(savedGrade) || savedGrade < 9 || savedGrade > 12 || !Array.isArray(data.courses)) {
             setStatus(planStatus, "The saved plan has invalid data. Contact the site administrator before editing it.", true);
             return;
         }
-        planCourses = data.courses.map((course) => createCourseRow(course)).filter((course) =>
-            Number.isInteger(course.grade) && course.grade >= 9 && course.grade <= 12
-        );
+        const loadedCourses = data.courses.map((course) => createCourseRow(course));
+        if (loadedCourses.some((course) => !Number.isInteger(course.grade) || course.grade < 9 || course.grade > 12)) {
+            setStatus(planStatus, "The saved plan contains a course with an invalid grade. It was not changed.", true);
+            return;
+        }
+        currentGrade = savedGrade;
+        planCourses = loadedCourses;
         transcriptPath = data.transcript_path;
         planDirty = false;
+        try {
+            StudentPlanner.saveSchedulePlan(currentGrade, planCourses);
+        } catch (error) {
+            setStatus(planStatus, `Your account plan loaded, but the device draft could not be updated: ${error.message}`, true);
+            renderPlan();
+            return;
+        }
         setStatus(planStatus, "Your saved plan is up to date.");
     } else {
-        currentGrade = 9;
-        planCourses = [];
+        planDirty = planCourses.length > 0;
         transcriptPath = null;
-        planDirty = false;
-        setStatus(planStatus, "Start a plan by choosing your current grade or importing a transcript.");
+        setStatus(planStatus, planDirty
+            ? "Your device draft is ready. Save plan to keep it with this account."
+            : "Your plan is ready. Changes save on this device automatically.");
     }
 
     currentGradeSelect.value = String(currentGrade);
+    quickGradeSelect.value = String(currentGrade);
     renderPlan();
 }
 
 function showSignedInState(user) {
+    if (!signedInUser) {
+        const draft = localStorage.getItem(StudentPlanner.STORAGE_KEY);
+        if (draft && !localStorage.getItem(ACCOUNT_BACKUP_KEY)) {
+            localStorage.setItem(ACCOUNT_BACKUP_KEY, draft);
+        }
+    }
     signedInUser = user;
-    authPanel.hidden = true;
-    plannerApp.hidden = false;
+    accountAccess.hidden = true;
+    signOutButton.hidden = false;
+    deletePlanButton.hidden = false;
+    planStorageLabel.textContent = "Signed in · save to sync your plan";
     document.querySelector("#signed-in-email").textContent = user.email || "Signed in";
     loadPlan();
 }
@@ -809,6 +888,10 @@ function showSignedOutState() {
     transcriptFileInput.value = "";
     transcriptStorageConsent.checked = false;
     transcriptReview.hidden = true;
+    currentGradeSelect.value = String(currentGrade);
+    quickGradeSelect.value = String(currentGrade);
+    renderPlan();
+    setStatus(planStatus, restoreError || "Draft saved on this device. Sign in only if you want to sync it across devices.", Boolean(restoreError));
 }
 
 async function handleAuth(mode) {
@@ -942,7 +1025,9 @@ function importTranscriptMatches() {
 
 async function savePlan() {
     if (!signedInUser) {
-        setStatus(planStatus, "Sign in before saving a plan.", true);
+        accountAccess.open = true;
+        authPanel.focus();
+        setStatus(planStatus, "Your draft is already saved on this device. Sign in if you want to save it across devices.");
         return;
     }
     if (pendingTranscriptFile && !transcriptStorageConsent.checked) {
@@ -1004,7 +1089,9 @@ async function savePlan() {
                 return;
             }
         }
-        setStatus(planStatus, "Plan saved. Your transcript PDF is stored in your private account folder.");
+        setStatus(planStatus, uploadedPath || transcriptPath
+            ? "Plan saved. Your transcript PDF is stored in your private account folder."
+            : "Plan saved to your account and on this device.");
     } catch (error) {
         setStatus(planStatus, error.message || "Could not save your plan.", true);
     } finally {
@@ -1027,7 +1114,8 @@ function downloadCsv() {
                 `Grade ${grade}`,
                 catalogCourse?.title || course.customTitle || "",
                 catalogCourse?.subject || "",
-                course.source === "transcript" ? "Transcript match" : "Planned"
+                course.status === "completed" ? "Completed" :
+                    course.status === "current" ? "Taking now" : "Plan to take"
             ]);
         }
     }
@@ -1061,6 +1149,9 @@ async function deletePlan() {
         transcriptFileInput.value = "";
         transcriptStorageConsent.checked = false;
         currentGradeSelect.value = "9";
+        quickGradeSelect.value = "9";
+        StudentPlanner.saveSchedulePlan(currentGrade, planCourses);
+        localStorage.removeItem(ACCOUNT_BACKUP_KEY);
         renderPlan();
         setStatus(planStatus, "Your saved plan and transcript PDF were deleted.");
     } catch (error) {
@@ -1078,28 +1169,11 @@ function initialize() {
     });
     signUpButton.addEventListener("click", () => handleAuth("signup"));
     googleSignInButton.addEventListener("click", handleGoogleSignIn);
-
-    if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !window.supabase?.createClient) {
-        setStatus(
-            authStatus,
-            "Sign-in is not configured yet. Add your Supabase project URL and public anon key, apply the SQL migration, and enable Google in Supabase Auth.",
-            true
-        );
-        return;
-    }
-
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    document.querySelector("#sign-out-button").addEventListener("click", async () => {
-        if ((planDirty || pendingTranscriptFile) && !window.confirm("You have unsaved changes. Sign out and discard them?")) return;
-        const { error } = await supabaseClient.auth.signOut();
-        if (error) {
-            setStatus(planStatus, `Could not sign out: ${error.message}`, true);
-            return;
-        }
-        showSignedOutState();
-    });
+    quickSubjectSelect.addEventListener("change", () => populateCourseOptions(quickSubjectSelect, quickCourseSelect));
+    quickClassForm.addEventListener("submit", addQuickClass);
     currentGradeSelect.addEventListener("change", () => {
         currentGrade = Number(currentGradeSelect.value);
+        quickGradeSelect.value = String(currentGrade);
         renderPlan();
         setDirty();
     });
@@ -1115,6 +1189,35 @@ function initialize() {
     savePlanButton.addEventListener("click", savePlan);
     document.querySelector("#download-csv-button").addEventListener("click", downloadCsv);
     deletePlanButton.addEventListener("click", deletePlan);
+    const openAccountForHash = () => {
+        if (window.location.hash === "#auth-panel") {
+            accountAccess.open = true;
+            authPanel.focus();
+        }
+    };
+    openAccountForHash();
+    window.addEventListener("hashchange", openAccountForHash);
+
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !window.supabase?.createClient) {
+        setStatus(
+            authStatus,
+            "Sign-in is not configured yet. Add your Supabase project URL and public anon key, apply the SQL migration, and enable Google in Supabase Auth.",
+            true
+        );
+        renderPlan();
+        return;
+    }
+
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    signOutButton.addEventListener("click", async () => {
+        if (pendingTranscriptFile && !window.confirm("The selected transcript PDF has not been saved. Sign out and discard the PDF? Your course draft will stay on this device.")) return;
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) {
+            setStatus(planStatus, `Could not sign out: ${error.message}`, true);
+            return;
+        }
+        showSignedOutState();
+    });
 
     supabaseClient.auth.getSession().then(({ data, error }) => {
         if (error) {
@@ -1122,6 +1225,12 @@ function initialize() {
             return;
         }
         if (data.session) showSignedInState(data.session.user);
+    }).catch((error) => {
+        setStatus(authStatus, `Could not restore your sign-in: ${error.message || "request failed"}`, true);
+    });
+
+    supabaseClient.auth.onAuthStateChange((_event, session) => {
+        if (session?.user && !signedInUser) showSignedInState(session.user);
     });
 }
 

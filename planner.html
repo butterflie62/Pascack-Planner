@@ -149,6 +149,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="./supabase-config.js" defer></script>
     <script src="./program-data.js" defer></script>
+    <script src="./student-data.js" defer></script>
     <script src="./planner.js" defer></script>
 </head>
 <body class="planner-page">
@@ -158,9 +159,12 @@
             <span>Pascack <strong>Planner</strong></span>
         </a>
         <nav class="site-nav" aria-label="Main navigation">
-            <a href="./program-of-studies.html#program-of-studies">All Subjects</a>
-            <a href="./road-map.html#road-map">Road Map</a>
-            <a href="./planner.html" aria-current="page">My Planner</a>
+            <a href="./planner.html" aria-current="page">My Schedule</a>
+            <a href="./interests.html">My Interests</a>
+            <a href="./programs.html">Program of Studies</a>
+            <a href="./roadmap.html">Road Map</a>
+            <a href="./profile.html">My Plan</a>
+            <a class="nav-signin" href="#auth-panel">Sign in / Sign up</a>
         </nav>
     </header>
 
@@ -170,52 +174,19 @@
                 <a class="back-link" href="./program-of-studies.html#program-of-studies"><span aria-hidden="true">←</span> Course guide</a>
                 <p class="eyebrow">Your courses, your next steps</p>
                 <h1 id="planner-title">My four-year plan</h1>
-                <p class="program-intro">Sign in to save your plan, import courses from a PDF transcript, and map out the years ahead.</p>
+                <p class="program-intro">Start with your grade, add classes you’ve taken, and build a draft schedule. Sign in only when you want to save across devices.</p>
             </div>
         </section>
 
         <div class="section-wrap planner-content">
-            <aside class="guide-note planner-privacy">
-                <strong>Your transcript is sensitive information.</strong>
-                This planner sends the PDF you select to the configured Supabase project and saves your course plan to your account. The PDF is private and account-scoped; use this only with permission and check with your school before uploading a real transcript.
-            </aside>
-
-            <section class="planner-auth" id="auth-panel" aria-labelledby="auth-title">
-                <div>
-                    <p class="eyebrow eyebrow-dark">Student account</p>
-                    <h2 id="auth-title">Sign in or create an account.</h2>
-                    <p class="planner-copy">Continue with Google, or use your email and password. Email accounts may require address confirmation.</p>
-                </div>
-                <form id="auth-form" class="planner-form">
-                    <button class="button button-outline google-signin-button" id="google-sign-in-button" type="button">
-                        <span aria-hidden="true">G</span>
-                        Continue with Google
-                    </button>
-                    <p class="auth-divider">or sign in with email</p>
-                    <label class="planner-field">
-                        <span>Email</span>
-                        <input id="auth-email" name="email" type="email" autocomplete="email" required>
-                    </label>
-                    <label class="planner-field">
-                        <span>Password</span>
-                        <input id="auth-password" name="password" type="password" minlength="8" autocomplete="current-password" required>
-                    </label>
-                    <div class="planner-actions">
-                        <button class="button button-navy" type="submit" id="sign-in-button">Sign in</button>
-                        <button class="button button-outline" type="button" id="sign-up-button">Create account</button>
-                    </div>
-                </form>
-                <p class="planner-status" id="auth-status" role="status" aria-live="polite"></p>
-            </section>
-
-            <section class="planner-app" id="planner-app" hidden aria-labelledby="plan-heading">
+            <section class="planner-app" id="planner-app" aria-labelledby="plan-heading">
                 <div class="planner-toolbar">
                     <div>
-                        <p class="eyebrow eyebrow-dark">Saved to your account</p>
-                        <h2 id="plan-heading">Plan your next classes.</h2>
+                        <p class="eyebrow eyebrow-dark" id="plan-storage-label">Private draft on this device</p>
+                        <h2 id="plan-heading">Build your four-year schedule.</h2>
                         <p class="planner-copy" id="signed-in-email"></p>
                     </div>
-                    <button class="button button-outline" id="sign-out-button" type="button">Sign out</button>
+                    <button class="button button-outline" id="sign-out-button" type="button" hidden>Sign out</button>
                 </div>
 
                 <div class="planner-controls">
@@ -233,11 +204,68 @@
                     </div>
                 </div>
 
-                <section class="transcript-import" aria-labelledby="transcript-title">
+                <section class="planner-start-panel" aria-labelledby="add-class-title">
+                    <div class="planner-start-copy">
+                        <p class="eyebrow eyebrow-dark">Step 1 · Add what you know</p>
+                        <h3 id="add-class-title">What classes have you taken?</h3>
+                        <p class="planner-copy">Add completed classes or what you’re taking now. No transcript or account needed. We’ll use these to suggest realistic next courses.</p>
+                    </div>
+                    <form id="quick-class-form" class="quick-class-form">
+                        <label class="planner-field">
+                            <span>Subject</span>
+                            <select id="quick-subject" required></select>
+                        </label>
+                        <label class="planner-field">
+                            <span>Course</span>
+                            <select id="quick-course" required></select>
+                        </label>
+                        <label class="planner-field">
+                            <span>Grade level</span>
+                            <select id="quick-grade" required>
+                                <option value="9">Grade 9</option>
+                                <option value="10">Grade 10</option>
+                                <option value="11">Grade 11</option>
+                                <option value="12">Grade 12</option>
+                            </select>
+                        </label>
+                        <label class="planner-field">
+                            <span>Status</span>
+                            <select id="quick-status">
+                                <option value="completed">Completed</option>
+                                <option value="current">Taking now</option>
+                                <option value="planned">Plan to take</option>
+                            </select>
+                        </label>
+                        <button class="button button-navy" type="submit">Add class</button>
+                    </form>
+                    <a class="text-link" href="#transcript-import">Have a transcript? Import it after signing in <span aria-hidden="true">→</span></a>
+                </section>
+
+                <section class="planner-guidance-grid" aria-label="Schedule guidance">
+                    <section class="planner-guidance-card" aria-labelledby="requirements-progress-title">
+                        <div>
+                            <p class="eyebrow eyebrow-dark">Step 2 · Keep requirements in view</p>
+                            <h3 id="requirements-progress-title">Graduation progress</h3>
+                            <p class="planner-copy">Estimates based on your saved classes. Check credits and eligibility with your counselor.</p>
+                        </div>
+                        <div id="requirement-progress" class="requirement-progress"></div>
+                        <a class="text-link" href="./electives.html">How course credits count <span aria-hidden="true">→</span></a>
+                    </section>
+                    <section class="planner-guidance-card" aria-labelledby="suggested-courses-title">
+                        <div>
+                            <p class="eyebrow eyebrow-dark">Step 3 · Choose what’s next</p>
+                            <h3 id="suggested-courses-title">Good next courses</h3>
+                            <p class="planner-copy" id="recommendation-copy"></p>
+                        </div>
+                        <div id="suggested-course-list" class="suggested-course-list"></div>
+                    </section>
+                </section>
+
+                <section class="transcript-import" id="transcript-import" aria-labelledby="transcript-title">
                     <div>
                         <p class="eyebrow eyebrow-dark">Bring in completed courses</p>
                         <h3 id="transcript-title">Upload a PDF transcript</h3>
-                        <p class="planner-copy">Course names and grade levels are matched in your browser. Review every match before importing it into your yearly spreadsheet; the original PDF is saved privately when you save your plan.</p>
+                        <p class="planner-copy">Optional shortcut. Course names are matched in your browser and must be reviewed before import. The PDF is uploaded privately only when you sign in, give permission, and save.</p>
                     </div>
                     <div class="transcript-upload">
                         <label class="planner-field" for="transcript-file">
@@ -262,8 +290,8 @@
                 <section class="four-year-sheet" aria-labelledby="sheet-title">
                     <div class="sheet-heading">
                         <div>
-                            <p class="eyebrow eyebrow-dark">Editable course sheet</p>
-                            <h3 id="sheet-title">Your four-year spreadsheet</h3>
+                            <p class="eyebrow eyebrow-dark">Step 4 · Shape your draft</p>
+                            <h3 id="sheet-title">Your four-year schedule</h3>
                         </div>
                         <div class="planner-actions">
                             <button class="button button-outline" id="download-csv-button" type="button">Download CSV</button>
@@ -281,7 +309,7 @@
                                     <th scope="col">Course</th>
                                     <th scope="col">Grade</th>
                                     <th scope="col">Subject</th>
-                                    <th scope="col">Source</th>
+                                    <th scope="col">Status</th>
                                     <th scope="col">Action</th>
                                 </tr>
                             </thead>
@@ -322,8 +350,8 @@
                 </dialog>
 
                 <div class="planner-danger-zone">
-                    <p>Deleting your plan also removes its saved transcript PDF.</p>
-                    <button class="button button-danger" id="delete-plan-button" type="button">Delete my plan and PDF</button>
+                    <p>Delete your cloud plan and any transcript PDF associated with your account.</p>
+                    <button class="button button-danger" id="delete-plan-button" type="button" hidden>Delete my account plan and PDF</button>
                 </div>
             </section>
         </div>
