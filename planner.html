@@ -6,145 +6,6 @@
     <meta name="theme-color" content="#12243a">
     <title>My Four-Year Plan | Pascack Planner</title>
     <link href="./style.css" rel="stylesheet">
-    <style>
-        .sheet-course-search-results {
-            display: grid;
-            max-height: 13rem;
-            overflow-y: auto;
-            border: 1px solid #cfd5dc;
-            background: #fff;
-        }
-
-        .sheet-course-search-results[hidden] {
-            display: none;
-        }
-
-        .sheet-course-search-result {
-            padding: 0.55rem 0.7rem;
-            border: 0;
-            border-bottom: 1px solid #e6e9ed;
-            background: #fff;
-            color: var(--ink);
-            cursor: pointer;
-            font: inherit;
-            font-size: 0.78rem;
-            text-align: left;
-        }
-
-        .sheet-course-search-result:last-of-type {
-            border-bottom: 0;
-        }
-
-        .sheet-course-search-result:hover,
-        .sheet-course-search-result:focus-visible {
-            background: #f0f3f5;
-            outline-color: var(--blue);
-        }
-
-        .sheet-course-search-empty {
-            margin: 0;
-            padding: 0.55rem 0.7rem;
-            color: var(--muted);
-            font-size: 0.74rem;
-        }
-
-        .course-picker-dialog {
-            width: min(36rem, calc(100vw - 2rem));
-            max-height: min(90vh, 48rem);
-            padding: 0;
-            border: 1px solid #cfd5dc;
-            border-radius: 4px;
-            color: var(--ink);
-        }
-
-        .course-picker-dialog::backdrop {
-            background: rgba(18, 36, 58, 0.58);
-        }
-
-        .course-picker-dialog-content {
-            display: grid;
-            gap: 1rem;
-            padding: 1.25rem;
-        }
-
-        .course-picker-dialog .planner-field[hidden] {
-            display: none;
-        }
-
-        .course-picker-dialog-heading {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 1rem;
-        }
-
-        .course-picker-dialog-heading h2,
-        .course-picker-dialog-heading p {
-            margin: 0;
-        }
-
-        .course-picker-dialog-heading h2 {
-            margin-bottom: 0.35rem;
-            color: var(--navy);
-            font-size: 1.3rem;
-        }
-
-        .course-picker-dialog-heading p,
-        .course-picker-note {
-            color: var(--muted);
-            font-size: 0.8rem;
-        }
-
-        .course-picker-dialog-content select {
-            min-height: 44px;
-            padding: 0.6rem 0.75rem;
-            border: 1px solid #cfd5dc;
-            border-radius: 2px;
-            background: #fff;
-            color: var(--ink);
-            font: inherit;
-            font-size: 0.84rem;
-        }
-
-        .course-picker-dialog-content input:focus-visible,
-        .course-picker-dialog-content select:focus-visible {
-            outline: 3px solid rgba(37, 79, 118, 0.35);
-            outline-offset: 2px;
-            border-color: var(--blue);
-        }
-
-        .course-picker-dialog .sheet-course-search-results {
-            max-height: 12rem;
-        }
-
-        .course-picker-dialog-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.65rem;
-        }
-
-        .sheet-course-picker-button {
-            min-height: 42px;
-            padding: 0.55rem 0.75rem;
-            border: 1px solid #b9c3ce;
-            border-radius: 2px;
-            background: #fff;
-            color: var(--navy);
-            cursor: pointer;
-            font: inherit;
-            font-size: 0.8rem;
-            font-weight: 700;
-        }
-
-        .sheet-course-picker-button:hover {
-            background: #f0f3f5;
-        }
-
-        .sheet-selected-course-name {
-            font-size: 0.78rem;
-            font-weight: 700;
-        }
-    </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
     <script src="./supabase-config.js" defer></script>
@@ -318,36 +179,42 @@
                     </div>
                 </section>
 
-                <dialog class="course-picker-dialog" id="course-picker-dialog" aria-labelledby="course-picker-title">
-                    <div class="course-picker-dialog-content">
-                        <div class="course-picker-dialog-heading">
-                            <div>
-                                <h2 id="course-picker-title">Choose a course</h2>
-                                <p id="course-picker-slot-label"></p>
+                <details class="planner-account-access">
+                    <summary id="auth-panel">Sign in or create an account to sync your schedule</summary>
+                    <p class="planner-copy">Your draft stays on this device unless you sign in and choose Save plan. Signing in on another device lets you continue there.</p>
+                    <section class="planner-auth" aria-labelledby="auth-title">
+                        <div>
+                            <p class="eyebrow eyebrow-dark">Optional account</p>
+                            <h3 id="auth-title">Keep your schedule across devices.</h3>
+                            <p class="planner-copy">Continue with Google, or use your email and password. Email accounts may require address confirmation.</p>
+                        </div>
+                        <form id="auth-form" class="planner-form">
+                            <button class="button button-outline google-signin-button" id="google-sign-in-button" type="button">
+                                <span aria-hidden="true">G</span>
+                                Continue with Google
+                            </button>
+                            <p class="auth-divider">or use email</p>
+                            <label class="planner-field">
+                                <span>Email</span>
+                                <input id="auth-email" name="email" type="email" autocomplete="email" required>
+                            </label>
+                            <label class="planner-field">
+                                <span>Password</span>
+                                <input id="auth-password" name="password" type="password" minlength="8" autocomplete="current-password" required>
+                            </label>
+                            <div class="planner-actions">
+                                <button class="button button-navy" type="submit" id="sign-in-button">Sign in</button>
+                                <button class="button button-outline" type="button" id="sign-up-button">Create account</button>
                             </div>
-                            <button class="button button-outline" id="close-course-picker" type="button" aria-label="Close course chooser">Close</button>
-                        </div>
-                        <label class="planner-field" for="course-picker-search">
-                            <span>Search all courses</span>
-                            <input id="course-picker-search" type="search" placeholder="Search by course, subject, or grade" autocomplete="off">
-                        </label>
-                        <div id="course-picker-search-results" class="sheet-course-search-results" aria-live="polite" hidden></div>
-                        <label class="planner-field" for="course-picker-select">
-                            <span>Or choose from the dropdown</span>
-                            <select id="course-picker-select"></select>
-                        </label>
-                        <p class="course-picker-note">Suggestions are optional. Any course can be selected for any slot.</p>
-                        <label class="planner-field" id="custom-course-field" for="custom-course-title" hidden>
-                            <span>Custom course title</span>
-                            <input id="custom-course-title" type="text" maxlength="160" placeholder="Enter course title">
-                        </label>
-                        <p class="planner-status" id="course-picker-error" role="status" aria-live="polite"></p>
-                        <div class="course-picker-dialog-actions">
-                            <button class="button button-outline" id="cancel-course-picker" type="button">Cancel</button>
-                            <button class="button button-navy" id="confirm-course-picker" type="button">Choose course</button>
-                        </div>
-                    </div>
-                </dialog>
+                        </form>
+                        <p class="planner-status" id="auth-status" role="status" aria-live="polite"></p>
+                    </section>
+                </details>
+
+                <aside class="guide-note planner-privacy">
+                    <strong>Transcript privacy:</strong>
+                    the PDF is processed in your browser and uploaded to private account storage only if you sign in, give permission, and save your plan.
+                </aside>
 
                 <div class="planner-danger-zone">
                     <p>Delete your cloud plan and any transcript PDF associated with your account.</p>
